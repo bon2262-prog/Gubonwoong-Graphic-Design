@@ -1,0 +1,6 @@
+{
+  "name": "Bonwoong Gu Portfolio",
+  "description": "The official portfolio of Bonwoong Gu — Graphic Designer, 3D Artist, and Art Director based in Seoul. Features a custom 3D art grid, fluid animation, and a visual project administration system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
