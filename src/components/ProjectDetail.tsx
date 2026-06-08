@@ -63,12 +63,14 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             src={project.thumbnailUrl}
             alt={project.title}
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover brightness-[0.7] dark:brightness-[0.45]"
+            className="w-full h-full object-cover brightness-100 dark:brightness-[0.45]"
           />
           {/* Ambient organic gradient bottom shade to guarantee typography high-contrast reading */}
           <div className={`absolute inset-0 bg-gradient-to-t ${
-            theme === 'dark' ? 'from-brand-black via-brand-black/20' : 'from-brand-offwhite via-transparent'
-          } to-transparent`} />
+            theme === 'dark' 
+              ? 'from-brand-black via-brand-black/40 to-transparent' 
+              : 'from-brand-offwhite via-brand-offwhite/85 to-transparent'
+          }`} />
         </div>
 
         {/* Content Overlay */}

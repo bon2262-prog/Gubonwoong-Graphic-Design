@@ -45,31 +45,21 @@ export const WorkGridItem: React.FC<WorkGridItemProps> = ({ project, onSelect, i
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
 
-        {/* Minimal Elegance Overlay (Fade-in directly on top of the image - Keeping the image visible!) */}
-        <div className={`absolute inset-0 flex flex-col justify-between p-6 opacity-0 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 ${
-          theme === 'dark' 
-            ? 'bg-[#111111]/92 text-white' 
-            : 'bg-[#F3F0EA]/95 text-[#111111]'
-        }`}>
+        {/* Minimal Elegance Overlay (Fade-in directly on top of the image - Translucent black matching the requested 40% opacity theme) */}
+        <div className="absolute inset-0 flex flex-col justify-between p-6 opacity-0 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 bg-black/40 text-white">
           {/* Top category label */}
-          <div className={`self-end font-mono text-[9px] px-3 py-1 rounded-full uppercase border ${
-            theme === 'dark'
-              ? 'border-white/10 bg-black/45 text-white/95'
-              : 'border-black/10 bg-white/45 text-[#111111]'
-          }`}>
+          <div className="self-end font-mono text-[9px] px-3 py-1 rounded-full uppercase border border-white/20 bg-black/50 text-white/95">
             {project.category}
           </div>
-
+ 
           {/* Bottom title & metadata */}
           <div className="space-y-1">
-            <h4 className="font-display text-lg font-bold tracking-tight text-balance">
+            <h4 className="font-display text-lg font-bold tracking-tight text-balance shadow-sm text-white">
               {project.title}
             </h4>
-            <div className={`flex items-center justify-between font-mono text-[10px] ${
-              theme === 'dark' ? 'text-white/85' : 'text-[#6b6862]'
-            }`}>
+            <div className="flex items-center justify-between font-mono text-[10px] text-white/95">
               <span className="tracking-wide">{project.subtitle}</span>
-              <span className="border-b border-brand-bronze/60 pb-0.5">{project.year}</span>
+              <span className="border-b border-white/60 pb-0.5">{project.year}</span>
             </div>
           </div>
         </div>

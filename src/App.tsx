@@ -259,8 +259,11 @@ export default function App() {
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
                     />
 
-                    {/* Gradient shade overlays */}
+                    {/* Ambient organic gradients for high-contrast typography reading */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                    {/* Black brand overlay on hover (40% opacity) */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                     {/* Meta info floating */}
                     <div className="absolute inset-0 flex flex-col justify-between p-8 sm:p-12 text-white">
