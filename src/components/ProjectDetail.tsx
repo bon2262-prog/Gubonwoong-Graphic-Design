@@ -69,7 +69,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
           <div className={`absolute inset-0 bg-gradient-to-t ${
             theme === 'dark' 
               ? 'from-brand-black via-brand-black/40 to-transparent' 
-              : 'from-brand-offwhite via-brand-offwhite/85 to-transparent'
+              : 'from-brand-offwhite/80 via-brand-offwhite/40 to-transparent'
           }`} />
         </div>
 
