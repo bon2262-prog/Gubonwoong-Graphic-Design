@@ -17,6 +17,8 @@ export interface Project {
   motionUrl: string; // Custom video, animation or visual simulation
   finalVisualUrl: string;
   client?: string;
+  galleryLayout?: 'stack' | 'grid2';
+  keyVisualsLayout?: ('full' | 'half')[];
 }
 
 export type ThemeType = 'dark' | 'light';

@@ -83,6 +83,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     year: '2026',
     category: '3D Design',
     aspectRatio: '1:1',
+    galleryLayout: 'stack',
     thumbnailUrl: '',
     isFeatured: false,
     isExperiment: false,
@@ -171,10 +172,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           }
         });
         const base64s = await Promise.all(promises);
-        setFormState(prev => ({
-          ...prev,
-          [fieldKey]: [...(prev[fieldKey] as string[] || []), ...base64s]
-        }));
+        setFormState(prev => {
+          const prevVisuals = prev[fieldKey] as string[] || [];
+          const prevLayouts = prev.keyVisualsLayout || [];
+          const newLayouts = [...prevLayouts];
+          if (fieldKey === 'keyVisuals') {
+            base64s.forEach(() => newLayouts.push('full'));
+          }
+          return {
+            ...prev,
+            [fieldKey]: [...prevVisuals, ...base64s],
+            keyVisualsLayout: newLayouts
+          };
+        });
       } else {
         const file = files[0];
         let base64 = '';
@@ -236,6 +246,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       year: '2026',
       category: '3D Design',
       aspectRatio: '1:1',
+      galleryLayout: 'stack',
       thumbnailUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop',
       isFeatured: false,
       isExperiment: false,
@@ -282,7 +293,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (newKeyVisualText.trim()) {
       setFormState({
         ...formState,
-        keyVisuals: [...formState.keyVisuals, newKeyVisualText.trim()]
+        keyVisuals: [...formState.keyVisuals, newKeyVisualText.trim()],
+        keyVisualsLayout: [...(formState.keyVisualsLayout || []), 'full']
       });
       setNewKeyVisualText('');
     }
@@ -291,7 +303,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const handleRemoveKeyVisual = (idx: number) => {
     const updated = [...formState.keyVisuals];
     updated.splice(idx, 1);
-    setFormState({ ...formState, keyVisuals: updated });
+    const updatedLayouts = [...(formState.keyVisualsLayout || [])];
+    if (updatedLayouts.length > idx) {
+      updatedLayouts.splice(idx, 1);
+    }
+    setFormState({
+      ...formState,
+      keyVisuals: updated,
+      keyVisualsLayout: updatedLayouts
+    });
   };
 
   return (
@@ -499,7 +519,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             className="w-full text-xs p-2.5 bg-neutral-900/50 border border-zinc-850 text-white rounded-sm"
                           />
                         </div>
-                        <div className="space-y-1 col-span-2">
+                        <div className="space-y-1">
                           <label className="font-mono text-[9px] text-neutral-400 block">CATEGORY</label>
                           <select
                             value={formState.category}
@@ -523,6 +543,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <option value="4:5">4:5 (Portrait)</option>
                             <option value="16:9">16:9 (Landscape)</option>
                             <option value="9:16">9:16 (Tall)</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="font-mono text-[9px] text-neutral-400 block">GALLERY GRID</label>
+                          <select
+                            value={formState.galleryLayout || 'stack'}
+                            onChange={(e) => setFormState({ ...formState, galleryLayout: e.target.value as any })}
+                            className="w-full text-xs p-2.5 bg-neutral-900 text-white outline-none rounded-sm border"
+                          >
+                            <option value="stack">1 Column Stack</option>
+                            <option value="grid2">2 Columns Grid</option>
                           </select>
                         </div>
                       </div>
@@ -850,10 +881,35 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                     />
                                   )}
-                                  <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2 z-10">
-                                    <span className="font-mono text-[8px] text-zinc-400 self-start uppercase">
-                                      {isVimeo ? 'VIMEO' : isVid ? 'VIDEO' : 'IMAGE'} 0{idx + 1}
-                                    </span>
+                                  {/* Small Badge */}
+                                  <div className="absolute bottom-1.5 left-1.5 bg-black/75 px-1 py-0.5 rounded text-[8px] font-mono text-brand-bronze uppercase pointer-events-none group-hover:opacity-0 transition-opacity z-10">
+                                    {formState.keyVisualsLayout?.[idx] === 'half' ? '2단 (HALF)' : '1단 (FULL)'}
+                                  </div>
+
+                                  <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2 z-10">
+                                    <div className="flex justify-between items-start w-full">
+                                      <span className="font-mono text-[8px] text-zinc-400 uppercase">
+                                        {isVimeo ? 'VIMEO' : isVid ? 'VIDEO' : 'IMAGE'} 0{idx + 1}
+                                      </span>
+                                      <select
+                                        value={formState.keyVisualsLayout?.[idx] || 'full'}
+                                        onChange={(e) => {
+                                          const updatedLayouts = [...(formState.keyVisualsLayout || [])];
+                                          while (updatedLayouts.length < formState.keyVisuals.length) {
+                                            updatedLayouts.push('full');
+                                          }
+                                          updatedLayouts[idx] = e.target.value as 'full' | 'half';
+                                          setFormState({
+                                            ...formState,
+                                            keyVisualsLayout: updatedLayouts
+                                          });
+                                        }}
+                                        className="bg-neutral-900 border border-neutral-700 text-[8px] text-zinc-300 font-mono rounded px-1 py-0.5 outline-none cursor-pointer"
+                                      >
+                                        <option value="full">1단 (FULL)</option>
+                                        <option value="half">2단 (HALF)</option>
+                                      </select>
+                                    </div>
                                     <button 
                                       type="button" 
                                       onClick={() => handleRemoveKeyVisual(idx)} 

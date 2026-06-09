@@ -159,11 +159,13 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       </section>
 
 
-      {/* --- SECTION 03: KEY VISUAL GALLERY (BEHANCE STYLE STACK) --- */}
-      <section className="py-6 max-w-6xl mx-auto px-4 md:px-6 space-y-2 md:space-y-4">
+      {/* --- SECTION 03: KEY VISUAL GALLERY (BEHANCE STYLE FLEXIBLE GRID) --- */}
+      <section className="py-6 max-w-6xl mx-auto px-4 md:px-6 grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
         {project.keyVisuals.map((visual, idx) => {
           const isVid = isVideoUrl(visual);
           const isVimeo = isVimeoUrl(visual);
+          const itemLayout = project.keyVisualsLayout?.[idx] || (project.galleryLayout === 'grid2' ? 'half' : 'full');
+          const gridClass = itemLayout === 'half' ? 'col-span-1' : 'col-span-1 md:col-span-2';
 
           return (
             <motion.div
@@ -172,7 +174,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-5%' }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
-              className="w-full overflow-hidden rounded-sm shadow-sm"
+              className={`w-full overflow-hidden rounded-sm shadow-sm ${gridClass}`}
               id={`visual-plate-${idx}`}
             >
               {isVimeo ? (
