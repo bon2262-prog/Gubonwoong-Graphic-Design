@@ -210,3 +210,74 @@ export function saveProjects(projects: Project[]): void {
     console.error('Failed to save portfolio database to localStorage', e);
   }
 }
+
+// Robust, high-capacity IndexedDB storage for storing heavy compressed base64 images without QuotaExceeded errors
+const DB_NAME = 'PortfolioDB';
+const STORE_NAME = 'ProjectsStore';
+const DB_VERSION = 1;
+
+function getIndexedDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
+export async function getProjectsAsync(): Promise<Project[]> {
+  try {
+    const db = await getIndexedDB();
+    const data = await new Promise<Project[] | null>((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.get('projects_list');
+      request.onsuccess = () => {
+        resolve(request.result || null);
+      };
+      request.onerror = () => {
+        resolve(null);
+      };
+    });
+    if (data && data.length > 0) {
+      return data;
+    }
+  } catch (e) {
+    console.error('Failed to load from IndexedDB, falling back to localStorage:', e);
+  }
+  return getProjects();
+}
+
+export async function saveProjectsAsync(projects: Project[]): Promise<void> {
+  // Primary save: IndexedDB (has virtually unlimited storage up to 50%+ of disk space)
+  try {
+    const db = await getIndexedDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.put(projects, 'projects_list');
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+    console.log('App database successfully persisted to IndexedDB.');
+  } catch (e) {
+    console.error('Failed to save to IndexedDB:', e);
+  }
+
+  // Secondary save: LocalStorage cache (silent fallback of lightweight text config data)
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projects));
+  } catch (e) {
+    console.warn('LocalStorage backup skipped (safely stored in IndexedDB instead):', e);
+  }
+}
+

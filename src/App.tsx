@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { getProjects, saveProjects } from './data';
+import { getProjects, saveProjects, getProjectsAsync, saveProjectsAsync } from './data';
 import { Project } from './types';
 import { WorkGridItem } from './components/WorkGridItem';
 import { SelectedExperiments } from './components/SelectedExperiments';
@@ -28,15 +28,25 @@ export default function App() {
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
 
-  // Initialize and load project database from localStorage
+  // Initialize and load project database from localStorage (instant rendering) & IndexedDB (handling heavy uploads)
   useEffect(() => {
+    // 1. Instant sync load from localStorage if available
     setProjects(getProjects());
+    
+    // 2. Full deep load from large-capacity IndexedDB
+    const loadDeepData = async () => {
+      const stored = await getProjectsAsync();
+      if (stored && stored.length > 0) {
+        setProjects(stored);
+      }
+    };
+    loadDeepData();
   }, []);
 
   // Sync projects updates with data persistence layer
-  const handleUpdateProjects = (updatedList: Project[]) => {
+  const handleUpdateProjects = async (updatedList: Project[]) => {
     setProjects(updatedList);
-    saveProjects(updatedList);
+    await saveProjectsAsync(updatedList);
   };
 
   const handleOpenContact = () => {
