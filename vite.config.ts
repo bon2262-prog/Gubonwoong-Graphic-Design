@@ -15,8 +15,10 @@ export default defineConfig(() => {
           server.middlewares.use((req, res, next) => {
             if (!req.url) return next();
 
+            const cleanUrl = req.url.split('?')[0];
+
             // -- GET /api/projects --
-            if (req.url === '/api/projects' && req.method === 'GET') {
+            if (cleanUrl.startsWith('/api/projects') && req.method === 'GET') {
               res.setHeader('Content-Type', 'application/json');
               try {
                 const dbPath = path.join(process.cwd(), 'projects-db.json');
@@ -33,7 +35,7 @@ export default defineConfig(() => {
             }
 
             // -- POST /api/projects --
-            if (req.url === '/api/projects' && req.method === 'POST') {
+            if (cleanUrl.startsWith('/api/projects') && req.method === 'POST') {
               let body = '';
               req.on('data', chunk => { body += chunk; });
               req.on('end', () => {
@@ -53,14 +55,15 @@ export default defineConfig(() => {
                   res.end(JSON.stringify({ error: err?.message || 'Error saving projects' }));
                 }
               });
+              req.resume(); // Flow control safeguard
               return;
             }
 
             // -- POST /api/upload --
-            if (req.url === '/api/upload' && req.method === 'POST') {
+            if (cleanUrl.startsWith('/api/upload') && req.method === 'POST') {
               let body = '';
               req.on('data', chunk => { body += chunk; });
-              req.on('end', () => {
+              req.on('end', async () => {
                 res.setHeader('Content-Type', 'application/json');
                 try {
                   const parsed = JSON.parse(body);
@@ -72,14 +75,48 @@ export default defineConfig(() => {
                   }
 
                   let dataString = base64;
+                  let mimeType = "image/jpeg";
                   if (base64.startsWith("data:")) {
                     const parts = base64.split(";base64,");
                     if (parts.length > 1) {
                       dataString = parts[1];
                     }
+                    const match = base64.match(/^data:(.*?);base64,/);
+                    if (match) {
+                      mimeType = match[1];
+                    }
                   }
 
                   const buffer = Buffer.from(dataString, "base64");
+
+                  // Attempt to upload to Catbox.moe first so files are accessible globally in all environments
+                  try {
+                    if (typeof FormData !== "undefined" && typeof Blob !== "undefined") {
+                      const catboxFormData = new FormData();
+                      catboxFormData.append("reqtype", "fileupload");
+                      const blob = new Blob([buffer], { type: mimeType });
+                      catboxFormData.append("fileToUpload", blob, filename);
+
+                      const catboxRes = await fetch("https://catbox.moe/user/api.php", {
+                        method: "POST",
+                        body: catboxFormData,
+                      });
+
+                      if (catboxRes.ok) {
+                        const rawText = await catboxRes.text();
+                        const trimmedUrl = rawText.trim();
+                        if (trimmedUrl && trimmedUrl.startsWith("http")) {
+                          console.log(`[Vite API Middleware] Successfully uploaded to Catbox: ${trimmedUrl}`);
+                          res.end(JSON.stringify({ url: trimmedUrl }));
+                          return;
+                        }
+                      }
+                      console.warn(`[Vite API Middleware] Catbox upload status: ${catboxRes.status}`);
+                    }
+                  } catch (catboxErr) {
+                    console.warn("[Vite API Middleware] Failed Catbox upload, falling back to local file:", catboxErr);
+                  }
+
                   const uploadsDir = path.join(process.cwd(), "uploads");
                   if (!fs.existsSync(uploadsDir)) {
                     fs.mkdirSync(uploadsDir, { recursive: true });
@@ -90,7 +127,7 @@ export default defineConfig(() => {
                   const filePath = path.join(uploadsDir, uniqueName);
 
                   fs.writeFileSync(filePath, buffer);
-                  console.log(`[Vite API Middleware] Saved upload: ${uniqueName}`);
+                  console.log(`[Vite API Middleware] Saved upload locally: ${uniqueName}`);
 
                   res.end(JSON.stringify({ url: `/uploads/${uniqueName}` }));
                 } catch (err: any) {
@@ -99,6 +136,7 @@ export default defineConfig(() => {
                   res.end(JSON.stringify({ error: err?.message || "Failed to write file to disk" }));
                 }
               });
+              req.resume(); // Flow control safeguard
               return;
             }
 

@@ -54,7 +54,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/upload", (req, res) => {
+  app.post("/api/upload", async (req, res) => {
     try {
       const { filename, base64 } = req.body;
       if (!base64 || !filename) {
@@ -63,14 +63,46 @@ async function startServer() {
 
       // Cleanly and safely strip standard Base64 Data URI scheme if present (e.g., data:image/png;base64,...)
       let dataString = base64;
+      let mimeType = "image/jpeg";
       if (base64.startsWith("data:")) {
         const parts = base64.split(";base64,");
         if (parts.length > 1) {
           dataString = parts[1];
         }
+        const match = base64.match(/^data:(.*?);base64,/);
+        if (match) {
+          mimeType = match[1];
+        }
       }
 
       const buffer = Buffer.from(dataString, "base64");
+
+      // Attempt to host externally on Catbox.moe so images work in ALL environments, other domains, sharing links, etc.
+      try {
+        if (typeof FormData !== "undefined" && typeof Blob !== "undefined") {
+          const catboxFormData = new FormData();
+          catboxFormData.append("reqtype", "fileupload");
+          const blob = new Blob([buffer], { type: mimeType });
+          catboxFormData.append("fileToUpload", blob, filename);
+
+          const response = await fetch("https://catbox.moe/user/api.php", {
+            method: "POST",
+            body: catboxFormData,
+          });
+
+          if (response.ok) {
+            const rawText = await response.text();
+            const trimmedUrl = rawText.trim();
+            if (trimmedUrl && trimmedUrl.startsWith("http")) {
+              console.log(`[Server API] Successfully uploaded to Catbox: ${trimmedUrl}`);
+              return res.json({ url: trimmedUrl });
+            }
+          }
+          console.warn(`[Server API] Catbox upload returned status ${response.status}`);
+        }
+      } catch (catboxErr) {
+        console.warn("[Server API] Failed to upload to Catbox, falling back to local storage:", catboxErr);
+      }
       
       // Clean and sanitize filename to prevent path traversal
       const cleanName = filename.replace(/[^a-zA-Z0-9.-]/g, "_");
@@ -78,7 +110,7 @@ async function startServer() {
       const filePath = path.join(uploadsDir, uniqueName);
 
       fs.writeFileSync(filePath, buffer);
-      console.log(`Saved uploaded file: ${uniqueName}`);
+      console.log(`Saved uploaded file locally: ${uniqueName}`);
       
       res.json({ url: `/uploads/${uniqueName}` });
     } catch (err) {
