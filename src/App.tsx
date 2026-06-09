@@ -118,11 +118,11 @@ export default function App() {
         >
           {/* Mobile Name Trigger */}
           <span className="lg:hidden font-display font-bold text-base tracking-tight text-brand-bronze uppercase">
-            B. GU // ART
+            GBW
           </span>
           {/* Desktop Logo: perfectly height-aligned inside the h-20 nav container */}
           <h1 className="hidden lg:block font-display text-2xl font-bold tracking-tight uppercase leading-none text-balance hover:text-brand-bronze transition-colors">
-            BONWOONG GU
+            GUBONWOONG
           </h1>
         </div>
 
