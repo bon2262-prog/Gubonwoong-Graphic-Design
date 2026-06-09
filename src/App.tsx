@@ -289,7 +289,7 @@ export default function App() {
                         </p>
                         <div className="pt-2">
                           <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold text-white group-hover:text-brand-bronze transition-colors">
-                            <span>COLLECT RECORD DETAILS</span>
+                            <span>VIEW DETAILS</span>
                             <span className="transition-transform group-hover:translate-x-1">&rarr;</span>
                           </span>
                         </div>

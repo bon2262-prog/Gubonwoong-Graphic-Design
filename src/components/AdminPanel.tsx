@@ -425,7 +425,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <label className="font-mono text-[9px] text-neutral-400 block">SUBTITLE CAPTION</label>
                           <input
                             type="text"
-                            required
                             value={formState.subtitle}
                             onChange={(e) => setFormState({ ...formState, subtitle: e.target.value })}
                             className="w-full text-xs p-2.5 bg-neutral-900/50 border border-zinc-850 focus:border-brand-bronze text-white rounded-sm"
@@ -538,7 +537,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="space-y-1">
                         <label className="font-mono text-[9px] text-neutral-400 block truncate">CONCEPT BRIEF OVERVIEW (3-5 LINES ONLY)</label>
                         <textarea
-                          required
+                          
                           rows={3}
                           value={formState.concept}
                           onChange={(e) => setFormState({ ...formState, concept: e.target.value })}
