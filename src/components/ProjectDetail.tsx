@@ -96,12 +96,6 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             <h1 className="font-display text-4xl sm:text-6xl md:text-8xl font-bold tracking-tighter leading-none uppercase">
               {project.title}
             </h1>
-
-            <p className={`font-mono text-xs md:text-sm tracking-widest uppercase ${
-              theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-            }`}>
-              PROJECT CATEGORY // {project.category}
-            </p>
           </motion.div>
         </div>
       </section>

@@ -284,9 +284,6 @@ export default function App() {
                             {featuredProject.title}
                           </h2>
                         </div>
-                        <p className="font-sans text-xs text-neutral-200 leading-relaxed max-w-md hidden sm:block">
-                          {featuredProject.concept}
-                        </p>
                         <div className="pt-2">
                           <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold text-white group-hover:text-brand-bronze transition-colors">
                             <span>VIEW DETAILS</span>
