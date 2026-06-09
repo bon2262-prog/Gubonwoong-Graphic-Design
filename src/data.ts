@@ -236,6 +236,25 @@ function getIndexedDB(): Promise<IDBDatabase> {
 
 export async function getProjectsAsync(): Promise<Project[]> {
   try {
+    const response = await fetch('/api/projects');
+    if (response.ok) {
+      const data = await response.json();
+      if (Array.isArray(data) && data.length > 0) {
+        // Cache locally for instant loading with fallback
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {
+          console.warn('Silent localstorage write fallback skip', e);
+        }
+        return data;
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load from server API, falling back to local:', e);
+  }
+
+  // Fallback 1: IndexedDB cache
+  try {
     const db = await getIndexedDB();
     const data = await new Promise<Project[] | null>((resolve) => {
       const tx = db.transaction(STORE_NAME, 'readonly');
@@ -252,13 +271,30 @@ export async function getProjectsAsync(): Promise<Project[]> {
       return data;
     }
   } catch (e) {
-    console.error('Failed to load from IndexedDB, falling back to localStorage:', e);
+    console.error('Failed to load from IndexedDB backup:', e);
   }
   return getProjects();
 }
 
 export async function saveProjectsAsync(projects: Project[]): Promise<void> {
-  // Primary save: IndexedDB (has virtually unlimited storage up to 50%+ of disk space)
+  // Primary save: Server-side API persistence
+  try {
+    const response = await fetch('/api/projects', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ projects }),
+    });
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+    console.log('App database successfully persisted to server.');
+  } catch (e) {
+    console.error('Failed to save to server database:', e);
+  }
+
+  // Backup saves: IndexedDB & LocalStorage
   try {
     const db = await getIndexedDB();
     await new Promise<void>((resolve, reject) => {
@@ -268,16 +304,14 @@ export async function saveProjectsAsync(projects: Project[]): Promise<void> {
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
-    console.log('App database successfully persisted to IndexedDB.');
   } catch (e) {
-    console.error('Failed to save to IndexedDB:', e);
+    console.warn('IndexedDB backup skipped:', e);
   }
 
-  // Secondary save: LocalStorage cache (silent fallback of lightweight text config data)
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projects));
   } catch (e) {
-    console.warn('LocalStorage backup skipped (safely stored in IndexedDB instead):', e);
+    console.warn('LocalStorage backup skipped:', e);
   }
 }
 

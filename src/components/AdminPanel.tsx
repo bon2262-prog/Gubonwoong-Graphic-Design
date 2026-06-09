@@ -104,7 +104,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     devUrl: '',
     materialUrl: '',
     motionUrl: '',
-    finalVisualUrl: ''
+    finalVisualUrl: '',
+    bannerTag: ''
   });
 
   const [newKeyVisualText, setNewKeyVisualText] = useState('');
@@ -159,6 +160,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     });
   };
 
+  const uploadToServer = async (base64: string, filename: string): Promise<string> => {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ filename, base64 }),
+    });
+    if (!res.ok) {
+      throw new Error(`Upload failed on server: ${res.statusText}`);
+    }
+    const data = await res.json();
+    return data.url;
+  };
+
   const handleLocalFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>, 
     fieldKey: keyof Project,
@@ -170,7 +186,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setIsUploading(true);
     try {
       if (multiple) {
-        const promises = (Array.from(files) as File[]).map((file) => {
+        const fileArray = Array.from(files) as File[];
+        const promises = fileArray.map((file) => {
           if (file.type.startsWith('video/')) {
             return new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
@@ -183,16 +200,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           }
         });
         const base64s = await Promise.all(promises);
+        
+        // Parallel upload to server
+        const uploadPromises = base64s.map((b64, index) => {
+          return uploadToServer(b64, fileArray[index].name);
+        });
+        const urls = await Promise.all(uploadPromises);
+
         setFormState(prev => {
           const prevVisuals = prev[fieldKey] as string[] || [];
           const prevLayouts = prev.keyVisualsLayout || [];
           const newLayouts = [...prevLayouts];
           if (fieldKey === 'keyVisuals') {
-            base64s.forEach(() => newLayouts.push('full'));
+            urls.forEach(() => newLayouts.push('full'));
           }
           return {
             ...prev,
-            [fieldKey]: [...prevVisuals, ...base64s],
+            [fieldKey]: [...prevVisuals, ...urls],
             keyVisualsLayout: newLayouts
           };
         });
@@ -209,14 +233,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         } else {
           base64 = await compressImage(file);
         }
+        
+        const serverUrl = await uploadToServer(base64, file.name);
+
         setFormState(prev => ({
           ...prev,
-          [fieldKey]: base64
+          [fieldKey]: serverUrl
         }));
       }
     } catch (error) {
-      console.error('File reading or compression error:', error);
-      alert('Error reading/compressing the selected file. Please try again.');
+      console.error('File uploaded or server save error:', error);
+      alert('Error saving the uploaded file to the server. Please try again.');
     } finally {
       setIsUploading(false);
       e.target.value = '';
@@ -268,7 +295,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       devUrl: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=600&auto=format&fit=crop',
       materialUrl: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600&auto=format&fit=crop',
       motionUrl: 'chrome_pulse_wave',
-      finalVisualUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop'
+      finalVisualUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop',
+      bannerTag: 'LATEST DIGITAL SCULPTURE'
     });
     setIsEditing(true);
     setIsCreatingNew(true);
@@ -527,6 +555,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             className="w-full text-xs p-2.5 bg-neutral-900/50 border border-zinc-850 focus:border-brand-bronze text-white rounded-sm"
                           />
                         </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-mono text-[9px] text-neutral-400 block">HERO BANNER OVERLINE (e.g. LATEST DIGITAL SCULPTURE)</label>
+                        <input
+                          type="text"
+                          placeholder="LATEST DIGITAL SCULPTURE"
+                          value={formState.bannerTag || ''}
+                          onChange={(e) => setFormState({ ...formState, bannerTag: e.target.value })}
+                          className="w-full text-xs p-2.5 bg-neutral-900/50 border border-zinc-850 focus:border-brand-bronze text-white rounded-sm"
+                        />
                       </div>
 
                       {/* Technical Tags Metadata */}

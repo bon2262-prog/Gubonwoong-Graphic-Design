@@ -19,6 +19,7 @@ export interface Project {
   client?: string;
   galleryLayout?: 'stack' | 'grid2';
   keyVisualsLayout?: ('full' | 'half')[];
+  bannerTag?: string;
 }
 
 export type ThemeType = 'dark' | 'light';

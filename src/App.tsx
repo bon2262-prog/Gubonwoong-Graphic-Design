@@ -289,7 +289,9 @@ export default function App() {
                       {/* Title & tags */}
                       <div className="space-y-4 max-w-xl">
                         <div className="space-y-1">
-                          <span className="font-mono text-[9px] tracking-widest text-[#C5A880] uppercase">LATEST DIGITAL SCULPTURE</span>
+                          <span className="font-mono text-[9px] tracking-widest text-[#C5A880] uppercase">
+                            {featuredProject.bannerTag || 'LATEST DIGITAL SCULPTURE'}
+                          </span>
                           <h2 className="font-display text-3xl sm:text-5xl font-bold tracking-tight uppercase leading-none">
                             {featuredProject.title}
                           </h2>
