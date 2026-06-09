@@ -60,6 +60,16 @@ const getVimeoEmbedUrl = (url: string) => {
   return url;
 };
 
+const isTextPlate = (url: string) => {
+  if (!url) return false;
+  return url.startsWith('text:');
+};
+
+const getTextFromPlate = (url: string) => {
+  if (!url) return '';
+  return url.slice(5);
+};
+
 export const AdminPanel: React.FC<AdminPanelProps> = ({
   isOpen,
   onClose,
@@ -98,6 +108,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   });
 
   const [newKeyVisualText, setNewKeyVisualText] = useState('');
+  const [newKeyVisualTextPlate, setNewKeyVisualTextPlate] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
   // Helper inside component to compress image to stay safe under localStorage limits
@@ -297,6 +308,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         keyVisualsLayout: [...(formState.keyVisualsLayout || []), 'full']
       });
       setNewKeyVisualText('');
+    }
+  };
+
+  const handleAddTextPlate = () => {
+    if (newKeyVisualTextPlate.trim()) {
+      setFormState({
+        ...formState,
+        keyVisuals: [...formState.keyVisuals, 'text:' + newKeyVisualTextPlate.trim()],
+        keyVisualsLayout: [...(formState.keyVisualsLayout || []), 'full']
+      });
+      setNewKeyVisualTextPlate('');
     }
   };
 
@@ -835,11 +857,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <button
                             type="button"
                             onClick={handleAddKeyVisual}
-                            className="bg-neutral-800 hover:bg-neutral-700 text-zinc-300 hover:text-white px-3 font-mono text-[10px] font-bold rounded-sm uppercase flex items-center gap-1"
+                            className="bg-neutral-800 hover:bg-neutral-700 text-zinc-300 hover:text-white px-3 font-mono text-[10px] font-bold rounded-sm uppercase flex items-center gap-1 shrink-0"
                           >
                             <PlusCircle className="w-3.5 h-3.5 text-brand-bronze" />
-                            <span>ADD</span>
+                            <span>ADD MEDIA</span>
                           </button>
+                        </div>
+
+                        <div className="space-y-1.5 border border-neutral-800/85 p-2.5 rounded-sm bg-neutral-950/40">
+                          <label className="font-mono text-[8px] text-zinc-500 block uppercase">// OR ADD NARRATIVE TEXT PLATE</label>
+                          <div className="flex gap-2 items-start">
+                            <textarea
+                              value={newKeyVisualTextPlate}
+                              onChange={(e) => setNewKeyVisualTextPlate(e.target.value)}
+                              rows={2}
+                              className="flex-1 text-xs p-2 bg-neutral-900/50 border border-zinc-850 text-white rounded-sm resize-none font-sans"
+                              placeholder="Type story narratives, quotes, or captions to display between visual plates..."
+                            />
+                            <button
+                              type="button"
+                              onClick={handleAddTextPlate}
+                              className="bg-neutral-800 hover:bg-neutral-700 text-zinc-300 hover:text-white px-3 py-2 font-mono text-[10px] font-bold rounded-sm uppercase flex items-center gap-1 shrink-0 h-full mt-auto"
+                            >
+                              <PlusCircle className="w-3.5 h-3.5 text-brand-bronze" />
+                              <span>ADD TEXT</span>
+                            </button>
+                          </div>
                         </div>
 
                         {/* Grid list preview of Key Visuals with responsive scaling and delete buttons */}
@@ -848,13 +891,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             {formState.keyVisuals.map((vis, idx) => {
                               const isVid = isVideoUrl(vis);
                               const isVimeo = isVimeoUrl(vis);
+                              const isTxt = isTextPlate(vis);
 
                               return (
                                 <div 
                                   key={idx} 
                                   className="group relative bg-[#161616] border border-neutral-800 rounded overflow-hidden aspect-video"
                                 >
-                                  {isVimeo ? (
+                                  {isTxt ? (
+                                    <div className="w-full h-full p-2 bg-neutral-900 border border-neutral-800 overflow-y-auto flex items-center justify-center">
+                                      <p className="text-[9px] text-zinc-300 font-sans italic text-center line-clamp-3">
+                                        {getTextFromPlate(vis)}
+                                      </p>
+                                    </div>
+                                  ) : isVimeo ? (
                                     <div className="w-full h-full relative bg-neutral-905">
                                       <iframe
                                         src={getVimeoEmbedUrl(vis)}
@@ -889,7 +939,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                   <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2 z-10">
                                     <div className="flex justify-between items-start w-full">
                                       <span className="font-mono text-[8px] text-zinc-400 uppercase">
-                                        {isVimeo ? 'VIMEO' : isVid ? 'VIDEO' : 'IMAGE'} 0{idx + 1}
+                                        {isTxt ? 'TEXT' : isVimeo ? 'VIMEO' : isVid ? 'VIDEO' : 'IMAGE'} 0{idx + 1}
                                       </span>
                                       <select
                                         value={formState.keyVisualsLayout?.[idx] || 'full'}

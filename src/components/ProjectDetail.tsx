@@ -48,6 +48,16 @@ const getVimeoEmbedUrl = (url: string) => {
   return url;
 };
 
+const isTextPlate = (url: string) => {
+  if (!url) return false;
+  return url.startsWith('text:');
+};
+
+const getTextFromPlate = (url: string) => {
+  if (!url) return '';
+  return url.slice(5);
+};
+
 interface ProjectDetailProps {
   project: Project;
   nextProject: Project;
@@ -164,6 +174,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
         {project.keyVisuals.map((visual, idx) => {
           const isVid = isVideoUrl(visual);
           const isVimeo = isVimeoUrl(visual);
+          const isTxt = isTextPlate(visual);
           const itemLayout = project.keyVisualsLayout?.[idx] || (project.galleryLayout === 'grid2' ? 'half' : 'full');
           const gridClass = itemLayout === 'half' ? 'col-span-1' : 'col-span-1 md:col-span-2';
 
@@ -177,7 +188,17 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
               className={`w-full overflow-hidden rounded-sm shadow-sm ${gridClass}`}
               id={`visual-plate-${idx}`}
             >
-              {isVimeo ? (
+              {isTxt ? (
+                <div className={`w-full py-12 md:py-20 px-6 md:px-16 rounded-sm flex flex-col justify-center ${
+                  theme === 'dark'
+                    ? 'bg-neutral-900/40 border border-neutral-900 text-neutral-150'
+                    : 'bg-neutral-50 border border-neutral-200 text-neutral-800'
+                }`}>
+                  <p className="font-sans text-base md:text-xl font-light leading-relaxed max-w-3xl mx-auto whitespace-pre-line tracking-wide">
+                    {getTextFromPlate(visual)}
+                  </p>
+                </div>
+              ) : isVimeo ? (
                 <div className="aspect-video w-full relative bg-neutral-900">
                   <iframe
                     src={getVimeoEmbedUrl(visual)}
@@ -215,7 +236,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       </section>
 
 
-      {/* --- SECTION 04: DESIGN PROCESS STUDIES --- */}
+      {/* --- SECTION 04: DESIGN PROCESS STUDIES ---
       <section className={`py-24 md:py-32 ${
         theme === 'dark' ? 'bg-brand-slate' : 'bg-brand-paper'
       } border-y transition-all duration-300 ${
@@ -239,7 +260,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             
-            {/* SKETCH */}
+            // SKETCH
             <div className="space-y-4">
               <div className="flex items-center gap-2 font-mono text-[11px] font-bold text-brand-bronze">
                 <Layers className="w-4 h-4" />
@@ -254,7 +275,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
               </p>
             </div>
 
-            {/* REFERENCE DESIGN */}
+            // REFERENCE DESIGN
             <div className="space-y-4">
               <div className="flex items-center gap-2 font-mono text-[11px] font-bold text-brand-bronze">
                 <Compass className="w-4 h-4" />
@@ -269,7 +290,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
               </p>
             </div>
 
-            {/* 3D DEV */}
+            // 3D DEV
             <div className="space-y-4">
               <div className="flex items-center gap-2 font-mono text-[11px] font-bold text-brand-bronze">
                 <Cpu className="w-4 h-4" />
@@ -284,7 +305,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
               </p>
             </div>
 
-            {/* MATERIAL NODES */}
+            // MATERIAL NODES
             <div className="space-y-4">
               <div className="flex items-center gap-2 font-mono text-[11px] font-bold text-brand-bronze">
                 <Palette className="w-4 h-4" />
@@ -303,9 +324,10 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
 
         </div>
       </section>
+      --- */}
 
 
-      {/* --- SECTION 05: MOTION GRAPHIC STUDY --- */}
+      {/* --- SECTION 05: MOTION GRAPHIC STUDY ---
       <section className="py-24 md:py-32 max-w-7xl mx-auto px-6 md:px-12 space-y-10">
         <div className="space-y-2">
           <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand-bronze font-bold">
@@ -321,7 +343,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
           </p>
         </div>
 
-        {/* Video / Dynamic Interactive Component */}
+        // Video / Dynamic Interactive Component
         <div className="relative aspect-video w-full rounded-sm overflow-hidden border border-neutral-800 bg-neutral-950 shadow-inner flex items-center justify-center">
           <InteractiveCanvas type={project.motionUrl || 'chrome_pulse_wave'} theme={theme} />
           
@@ -335,9 +357,10 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
           </div>
         </div>
       </section>
+      --- */}
 
 
-      {/* --- SECTION 06: FINAL SPECTACULAR CLIMAX --- */}
+      {/* --- SECTION 06: FINAL SPECTACULAR CLIMAX ---
       <section className="py-16 md:py-24 max-w-7xl mx-auto px-6 md:px-12 space-y-8">
         <div className="text-center space-y-1">
           <h4 className="font-mono text-[10px] tracking-widest text-brand-bronze font-bold uppercase">
@@ -348,7 +371,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
           </h2>
         </div>
 
-        {/* Cinematic full screen container */}
+        // Cinematic full screen container
         <div className="w-full aspect-[21/9] rounded-sm overflow-hidden border border-neutral-700/20 relative shadow-2xl">
           <img
             src={project.finalVisualUrl}
@@ -362,6 +385,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
           </div>
         </div>
       </section>
+      --- */}
 
 
       {/* --- NEXT PROJECT REDIRECT TRIGGER (NETFLIX STYLE) --- */}
