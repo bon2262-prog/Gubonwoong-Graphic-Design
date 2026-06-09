@@ -136,7 +136,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
               </span>
             </div>
 
-            <h1 className="font-display text-4xl sm:text-[60px] md:text-[80px] font-bold tracking-tighter leading-none uppercase">
+            <h1 className="font-display text-4xl sm:text-[60px] md:text-[80px] font-bold tracking-tighter leading-none">
               {project.title}
             </h1>
           </motion.div>
