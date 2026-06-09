@@ -61,7 +61,7 @@ export default function App() {
   const experimentsList = projects.filter(p => p.isExperiment);
 
   // Split list to insert Experiments section flawlessly in-between:
-  // WORK, WORK, WORK -> Selected Experiments Banner -> WORK, WORK, WORK
+  // WORK, WORK, WORK -> Selected Experiments Banner (commented out) -> WORK, WORK, WORK
   const firstHalfGrid = regularProjects.slice(0, 3);
   const secondHalfGrid = regularProjects.slice(3);
 
@@ -332,7 +332,8 @@ export default function App() {
                 )}
               </section>
 
-              {/* --- 3. DYNAMIC COMMITTED SELECTED EXPERIMENTS PANEL --- */}
+              {/* --- 3. DYNAMIC COMMITTED SELECTED EXPERIMENTS PANEL (COMMENTED OUT / HIDDEN AS REQUESTED) --- */}
+              {/* 
               {experimentsList.length > 0 && (
                 <SelectedExperiments
                   experiments={experimentsList}
@@ -340,17 +341,18 @@ export default function App() {
                   theme={theme}
                 />
               )}
+              */}
 
               {/* --- 4. GRID HOUSING (SECOND FLANK) --- */}
               <section className="px-6 md:px-12">
                 {secondHalfGrid.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 align-start">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 align-start pt-6">
                     {secondHalfGrid.map((proj, idx) => (
                       <WorkGridItem
                         key={proj.id}
                         project={proj}
                         onSelect={(id) => setSelectedProjectId(id)}
-                        index={idx + 4}
+                        index={idx + 3}
                         theme={theme}
                       />
                     ))}

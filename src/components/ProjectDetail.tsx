@@ -44,14 +44,14 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       <div className="fixed top-6 left-6 z-50">
         <button
           onClick={onBack}
-          className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-mono tracking-widest uppercase transition-all duration-300 shadow-md ${
+          className={`flex items-center justify-center rounded-full border p-2.5 text-xs font-mono transition-all duration-300 shadow-md ${
             theme === 'dark'
               ? 'border-white/10 bg-black/80 text-white hover:bg-white hover:text-black hover:border-white'
               : 'border-black/10 bg-white/80 text-brand-black hover:bg-black hover:text-white hover:border-black'
           }`}
+          aria-label="Back to main page"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>ESC // BACK TO WORKS</span>
         </button>
       </div>
 
