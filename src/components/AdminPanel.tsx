@@ -169,7 +169,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       body: JSON.stringify({ filename, base64 }),
     });
     if (!res.ok) {
-      throw new Error(`Upload failed on server: ${res.statusText}`);
+      let errMsg = res.statusText;
+      try {
+        const errJson = await res.json();
+        if (errJson && errJson.error) {
+          errMsg = errJson.error;
+        }
+      } catch (e) {
+        try {
+          const text = await res.text();
+          if (text) errMsg = text;
+        } catch {}
+      }
+      throw new Error(errMsg || `Status ${res.status}`);
     }
     const data = await res.json();
     return data.url;
@@ -241,9 +253,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           [fieldKey]: serverUrl
         }));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('File uploaded or server save error:', error);
-      alert('Error saving the uploaded file to the server. Please try again.');
+      alert(`Error saving the uploaded file to the server:\n${error?.message || error}\nPlease try again.`);
     } finally {
       setIsUploading(false);
       e.target.value = '';

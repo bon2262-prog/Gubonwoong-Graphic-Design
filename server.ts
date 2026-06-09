@@ -61,11 +61,13 @@ async function startServer() {
         return res.status(400).json({ error: "Missing base64 data or filename" });
       }
 
-      // Check and strip standard Base64 Data URI scheme if present (e.g., data:image/png;base64,...)
-      const match = base64.match(/^data:(.*);base64,(.*)$/);
+      // Cleanly and safely strip standard Base64 Data URI scheme if present (e.g., data:image/png;base64,...)
       let dataString = base64;
-      if (match) {
-        dataString = match[2];
+      if (base64.startsWith("data:")) {
+        const parts = base64.split(";base64,");
+        if (parts.length > 1) {
+          dataString = parts[1];
+        }
       }
 
       const buffer = Buffer.from(dataString, "base64");
