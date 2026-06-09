@@ -15,6 +15,39 @@ import {
   ArrowRight
 } from 'lucide-react';
 
+const isVideoUrl = (url: string) => {
+  if (!url) return false;
+  if (url.startsWith('data:video/')) return true;
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.mov?'];
+  const lowercaseUrl = url.toLowerCase();
+  return videoExtensions.some(ext => lowercaseUrl.includes(ext));
+};
+
+const isVimeoUrl = (url: string) => {
+  if (!url) return false;
+  return url.includes('vimeo.com') || url.includes('player.vimeo.com');
+};
+
+const getVimeoEmbedUrl = (url: string) => {
+  let videoId = '';
+  if (url.includes('player.vimeo.com/video/')) {
+    const match = url.match(/video\/([0-9]+)/);
+    if (match && match[1]) {
+      videoId = match[1];
+    }
+  } else {
+    const match = url.match(/vimeo\.com\/(?:video\/)?([0-9]+)/);
+    if (match && match[1]) {
+      videoId = match[1];
+    }
+  }
+
+  if (videoId) {
+    return `https://player.vimeo.com/video/${videoId}?autoplay=1&loop=1&muted=1`;
+  }
+  return url;
+};
+
 interface ProjectDetailProps {
   project: Project;
   nextProject: Project;
@@ -126,36 +159,57 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
       </section>
 
 
-      {/* --- SECTION 03: KEY VISUAL GALLERY --- */}
-      <section className="py-12 md:py-16 max-w-7xl mx-auto px-6 md:px-12 space-y-20 md:space-y-36">
-        {project.keyVisuals.map((visual, idx) => (
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-10%'} }
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="w-full flex flex-col space-y-4"
-          >
-            {/* Visual Screen with Wide Frame Negative Space */}
-            <div className={`overflow-hidden rounded-sm border ${
-              theme === 'dark' ? 'border-neutral-800bg-neutral-900/40' : 'border-neutral-200 bg-black/5'
-            } aspect-video relative`}>
-              <img
-                src={visual}
-                alt={`${project.title} detailed visual presentation 0${idx + 1}`}
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            
-            {/* Technical metadata tag spacing */}
-            <div className="flex justify-between font-mono text-[10px] text-brand-muted uppercase">
-              <span>PLATE 0{idx + 1} // STRUCTURAL SPEC</span>
-              <span>HD PHOTO RENDER CAMERA 01</span>
-            </div>
-          </motion.div>
-        ))}
+      {/* --- SECTION 03: KEY VISUAL GALLERY (BEHANCE STYLE STACK) --- */}
+      <section className="py-6 max-w-6xl mx-auto px-4 md:px-6 space-y-2 md:space-y-4">
+        {project.keyVisuals.map((visual, idx) => {
+          const isVid = isVideoUrl(visual);
+          const isVimeo = isVimeoUrl(visual);
+
+          return (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-5%' }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="w-full overflow-hidden rounded-sm shadow-sm"
+              id={`visual-plate-${idx}`}
+            >
+              {isVimeo ? (
+                <div className="aspect-video w-full relative bg-neutral-900">
+                  <iframe
+                    src={getVimeoEmbedUrl(visual)}
+                    className="absolute top-0 left-0 w-full h-full"
+                    frameBorder="0"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowFullScreen
+                    title={`${project.title} vimeo 0${idx + 1}`}
+                  ></iframe>
+                </div>
+              ) : isVid ? (
+                <div className="w-full bg-neutral-950">
+                  <video
+                    src={visual}
+                    autoPlay
+                    controls
+                    playsInline
+                    loop
+                    muted
+                    preload="metadata"
+                    className="w-full h-auto block max-h-[85vh] mx-auto bg-black"
+                  />
+                </div>
+              ) : (
+                <img
+                  src={visual}
+                  alt={`${project.title} presentation 0${idx + 1}`}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-auto object-cover block"
+                />
+              )}
+            </motion.div>
+          );
+        })}
       </section>
 
 

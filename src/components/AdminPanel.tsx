@@ -27,6 +27,39 @@ interface AdminPanelProps {
   theme: 'dark' | 'light';
 }
 
+const isVideoUrl = (url: string) => {
+  if (!url) return false;
+  if (url.startsWith('data:video/')) return true;
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.mov?'];
+  const lowercaseUrl = url.toLowerCase();
+  return videoExtensions.some(ext => lowercaseUrl.includes(ext));
+};
+
+const isVimeoUrl = (url: string) => {
+  if (!url) return false;
+  return url.includes('vimeo.com') || url.includes('player.vimeo.com');
+};
+
+const getVimeoEmbedUrl = (url: string) => {
+  let videoId = '';
+  if (url.includes('player.vimeo.com/video/')) {
+    const match = url.match(/video\/([0-9]+)/);
+    if (match && match[1]) {
+      videoId = match[1];
+    }
+  } else {
+    const match = url.match(/vimeo\.com\/(?:video\/)?([0-9]+)/);
+    if (match && match[1]) {
+      videoId = match[1];
+    }
+  }
+
+  if (videoId) {
+    return `https://player.vimeo.com/video/${videoId}?autoplay=1&loop=1&muted=1`;
+  }
+  return url;
+};
+
 export const AdminPanel: React.FC<AdminPanelProps> = ({
   isOpen,
   onClose,
@@ -125,22 +158,44 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setIsUploading(true);
     try {
       if (multiple) {
-        const promises = Array.from(files).map((file) => compressImage(file as File));
+        const promises = (Array.from(files) as File[]).map((file) => {
+          if (file.type.startsWith('video/')) {
+            return new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = (ev) => resolve(ev.target?.result as string);
+              reader.onerror = () => reject(new Error('Failed to read video file'));
+              reader.readAsDataURL(file);
+            });
+          } else {
+            return compressImage(file);
+          }
+        });
         const base64s = await Promise.all(promises);
         setFormState(prev => ({
           ...prev,
           [fieldKey]: [...(prev[fieldKey] as string[] || []), ...base64s]
         }));
       } else {
-        const base64 = await compressImage(files[0]);
+        const file = files[0];
+        let base64 = '';
+        if (file.type.startsWith('video/')) {
+          base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => resolve(ev.target?.result as string);
+            reader.onerror = () => reject(new Error('Failed to read video file'));
+            reader.readAsDataURL(file);
+          });
+        } else {
+          base64 = await compressImage(file);
+        }
         setFormState(prev => ({
           ...prev,
           [fieldKey]: base64
         }));
       }
     } catch (error) {
-      console.error('Image compression or upload error:', error);
-      alert('Error reading/compressing the selected image. Please try again.');
+      console.error('File reading or compression error:', error);
+      alert('Error reading/compressing the selected file. Please try again.');
     } finally {
       setIsUploading(false);
       e.target.value = '';
@@ -717,19 +772,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         </div>
                       </div>
 
-                      {/* KEY VISUALS LIST BUILDER AND MULTIPLE LOCAL COMP计算机 UPLOADS */}
+                      {/* KEY VISUALS LIST BUILDER AND MULTIPLE LOCAL UPLOADS */}
                       <div className="space-y-3 border-t border-neutral-800 pt-4">
                         <div className="flex justify-between items-center">
                           <div>
-                            <label className="font-mono text-[9px] text-neutral-400 block">// KEY GALLERY SHOTPLATES ({formState.keyVisuals?.length || 0} images)</label>
-                            <span className="text-[9px] text-neutral-500 font-mono block mt-0.5">Attach multiple portfolio rendering files at once</span>
+                            <label className="font-mono text-[9px] text-neutral-400 block">// KEY GALLERY SHOTPLATES ({formState.keyVisuals?.length || 0} media assets)</label>
+                            <span className="text-[9px] text-neutral-500 font-mono block mt-0.5">Attach multiple portfolio image/video rendering files at once</span>
                           </div>
                           <label className="inline-flex items-center gap-1.5 cursor-pointer bg-brand-bronze hover:bg-brand-bronze/80 text-black px-3 py-1.5 font-mono text-[10px] font-bold rounded-sm transition-colors uppercase">
                             <Upload className="w-3.5 h-3.5" />
-                            <span>{isUploading ? 'COMPRESSING...' : 'UPLOAD MULTIPLE IMAGES'}</span>
+                            <span>{isUploading ? 'UPLOADING...' : 'UPLOAD IMAGES/VIDEOS'}</span>
                             <input
                               type="file"
-                              accept="image/*"
+                              accept="image/*,video/*"
                               multiple
                               className="hidden"
                               onChange={(e) => handleLocalFileUpload(e, 'keyVisuals', true)}
@@ -744,7 +799,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             value={newKeyVisualText}
                             onChange={(e) => setNewKeyVisualText(e.target.value)}
                             className="flex-1 text-xs p-2 bg-neutral-900/50 border border-zinc-850 text-white rounded-sm"
-                            placeholder="Add single large picture web address manually"
+                            placeholder="Add web address manually (Image URL, Video file, or Vimeo Link)"
                           />
                           <button
                             type="button"
@@ -759,32 +814,61 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         {/* Grid list preview of Key Visuals with responsive scaling and delete buttons */}
                         {formState.keyVisuals && formState.keyVisuals.length > 0 ? (
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-52 overflow-y-auto pt-1 border border-neutral-900 p-2 rounded-sm bg-neutral-950/20">
-                            {formState.keyVisuals.map((vis, idx) => (
-                              <div 
-                                key={idx} 
-                                className="group relative bg-[#161616] border border-neutral-800 rounded overflow-hidden aspect-video"
-                              >
-                                <img 
-                                  src={vis} 
-                                  alt={`Gallery plate ${idx + 1}`}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
-                                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
-                                  <span className="font-mono text-[8px] text-zinc-400 self-start">PLATE 0{idx + 1}</span>
-                                  <button 
-                                    type="button" 
-                                    onClick={() => handleRemoveKeyVisual(idx)} 
-                                    className="text-red-400 font-bold hover:scale-110 hover:text-red-300 transition-all text-[9.5px] font-mono bg-black/85 px-2 py-1 rounded"
-                                  >
-                                    DELETE
-                                  </button>
+                            {formState.keyVisuals.map((vis, idx) => {
+                              const isVid = isVideoUrl(vis);
+                              const isVimeo = isVimeoUrl(vis);
+
+                              return (
+                                <div 
+                                  key={idx} 
+                                  className="group relative bg-[#161616] border border-neutral-800 rounded overflow-hidden aspect-video"
+                                >
+                                  {isVimeo ? (
+                                    <div className="w-full h-full relative bg-neutral-905">
+                                      <iframe
+                                        src={getVimeoEmbedUrl(vis)}
+                                        className="absolute inset-0 w-full h-full pointer-events-none scale-105"
+                                        frameBorder="0"
+                                        allow="autoplay"
+                                        title={`Vimeo preview 0${idx + 1}`}
+                                      ></iframe>
+                                    </div>
+                                  ) : isVid ? (
+                                    <video 
+                                      src={vis} 
+                                      className="w-full h-full object-cover"
+                                      autoPlay
+                                      loop
+                                      muted 
+                                      playsInline
+                                      preload="metadata"
+                                    />
+                                  ) : (
+                                    <img 
+                                      src={vis} 
+                                      alt={`Gallery plate ${idx + 1}`}
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                  )}
+                                  <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2 z-10">
+                                    <span className="font-mono text-[8px] text-zinc-400 self-start uppercase">
+                                      {isVimeo ? 'VIMEO' : isVid ? 'VIDEO' : 'IMAGE'} 0{idx + 1}
+                                    </span>
+                                    <button 
+                                      type="button" 
+                                      onClick={() => handleRemoveKeyVisual(idx)} 
+                                      className="text-red-400 font-bold hover:scale-110 hover:text-red-300 transition-all text-[9.5px] font-mono bg-black/85 px-2 py-1 rounded self-end"
+                                    >
+                                      DELETE
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className="text-center py-6 border border-dashed border-neutral-800 rounded-sm font-mono text-[9.5px] text-zinc-500">
-                            NO KEY VISUAL PLATES ATTACHED. SELECT LOCAL IMAGES OR ADD URLS ABOVE.
+                            NO KEY VISUAL PLATES ATTACHED. SELECT LOCAL IMAGES/VIDEOS OR ADD URLS ABOVE.
                           </div>
                         )}
                       </div>
