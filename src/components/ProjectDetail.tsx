@@ -106,13 +106,13 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             src={project.thumbnailUrl}
             alt={project.title}
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover brightness-100 dark:brightness-[0.45]"
+            className="w-full h-full object-cover"
           />
           {/* Ambient organic gradient bottom shade to guarantee typography high-contrast reading */}
           <div className={`absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t ${
             theme === 'dark' 
-              ? 'from-brand-black via-brand-black/40 to-transparent' 
-              : 'from-brand-offwhite/80 via-brand-offwhite/40 to-transparent'
+              ? 'from-transparent to-transparent' 
+              : 'from-brand-offwhite via-brand-offwhite/50 to-transparent opacity-80'
           }`} />
         </div>
 
@@ -136,7 +136,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
               </span>
             </div>
 
-            <h1 className="font-display text-4xl sm:text-6xl md:text-8xl font-bold tracking-tighter leading-none uppercase">
+            <h1 className="font-display text-4xl sm:text-[60px] md:text-[80px] font-bold tracking-tighter leading-none uppercase">
               {project.title}
             </h1>
           </motion.div>
