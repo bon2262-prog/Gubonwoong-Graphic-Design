@@ -109,7 +109,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             className="w-full h-full object-cover brightness-100 dark:brightness-[0.45]"
           />
           {/* Ambient organic gradient bottom shade to guarantee typography high-contrast reading */}
-          <div className={`absolute inset-0 bg-gradient-to-t ${
+          <div className={`absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t ${
             theme === 'dark' 
               ? 'from-brand-black via-brand-black/40 to-transparent' 
               : 'from-brand-offwhite/80 via-brand-offwhite/40 to-transparent'
