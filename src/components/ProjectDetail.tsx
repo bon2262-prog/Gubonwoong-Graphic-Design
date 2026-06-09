@@ -158,7 +158,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
           </div>
 
           <div className="lg:col-span-8">
-            <p className={`font-sans text-xl md:text-2xl font-light leading-relaxed tracking-tight ${
+            <p className={`font-sans text-xl md:text-1xl font-light leading-relaxed tracking-tight ${
               theme === 'dark' ? 'text-neutral-200' : 'text-neutral-700'
             }`}>
               {project.concept}
