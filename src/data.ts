@@ -1,4 +1,5 @@
 import { Project } from './types';
+import { getGithubSettings, fetchProjectsFromGithub, commitProjectsToGithub } from './utils/githubSync';
 
 // Let's seed with our generated assets and custom high-fidelity details
 export const INITIAL_PROJECTS: Project[] = [
@@ -235,6 +236,26 @@ function getIndexedDB(): Promise<IDBDatabase> {
 }
 
 export async function getProjectsAsync(): Promise<Project[]> {
+  // Try loading from GitHub first if enabled
+  const githubSettings = getGithubSettings();
+  if (githubSettings.enabled) {
+    try {
+      const githubData = await fetchProjectsFromGithub(githubSettings);
+      if (githubData && githubData.length > 0) {
+        console.log('[GitHub Sync] Successfully loaded database from GitHub repository!');
+        // Keep offline/local caches in sync with GitHub master
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(githubData));
+        } catch (e) {
+          console.warn('Silent localstorage write fallback skip', e);
+        }
+        return githubData;
+      }
+    } catch (err) {
+      console.error('[GitHub Sync] Failed to download master catalog from GitHub repo. Falling back to local offline caches...', err);
+    }
+  }
+
   try {
     const response = await fetch('/api/projects');
     if (response.ok) {
@@ -277,7 +298,22 @@ export async function getProjectsAsync(): Promise<Project[]> {
 }
 
 export async function saveProjectsAsync(projects: Project[]): Promise<void> {
-  // Primary save: Server-side API persistence
+  // Primary save 1: GitHub integration if enabled
+  const githubSettings = getGithubSettings();
+  if (githubSettings.enabled) {
+    try {
+      const success = await commitProjectsToGithub(projects, githubSettings);
+      if (success) {
+        console.log('[GitHub Sync] Successfully pushed new commit update to GitHub repository!');
+      }
+    } catch (err) {
+      console.error('[GitHub Sync] FAILED to commit catalog changes to GitHub! Check your token or repo permissions:', err);
+      // Alert user about sync failure? It is safer to re-throw or handle so the admin panel can show saving errors
+      throw err;
+    }
+  }
+
+  // Primary save 2: Server-side API persistence
   try {
     const response = await fetch('/api/projects', {
       method: 'POST',

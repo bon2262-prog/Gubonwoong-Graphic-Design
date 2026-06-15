@@ -28,6 +28,13 @@ import {
   uploadToCloudProvider,
   StorageSettings
 } from '../utils/cloudUploader';
+import {
+  getGithubSettings,
+  saveGithubSettings,
+  fetchProjectsFromGithub,
+  commitProjectsToGithub,
+  GithubSyncSettings
+} from '../utils/githubSync';
 
 
 interface AdminPanelProps {
@@ -126,6 +133,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showStorageConfig, setShowStorageConfig] = useState(false);
   const [testUploadResult, setTestUploadResult] = useState('');
   const [isTestingUpload, setIsTestingUpload] = useState(false);
+
+  const [githubSettings, setGithubSettingsState] = useState<GithubSyncSettings>(getGithubSettings());
+  const [showGithubConfig, setShowGithubConfig] = useState(false);
+  const [isTestingGithub, setIsTestingGithub] = useState(false);
+  const [githubTestResult, setGithubTestResult] = useState<{ success: boolean; message: string; count?: number } | null>(null);
 
 
   // Helper inside component to compress image to stay safe under storage limits
@@ -314,6 +326,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setIsCreatingNew(false);
     setSelectedProjectId(proj.id);
     setShowStorageConfig(false);
+    setShowGithubConfig(false);
   };
 
   const handleCreateNewTrigger = () => {
@@ -341,6 +354,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setIsEditing(true);
     setIsCreatingNew(true);
     setShowStorageConfig(false);
+    setShowGithubConfig(false);
   };
 
   const handleDeleteProject = (id: string) => {
@@ -543,11 +557,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="button"
                       onClick={() => {
                         setShowStorageConfig(!showStorageConfig);
+                        setShowGithubConfig(false);
                         setIsEditing(false);
                       }}
                       className={`w-full flex items-center justify-center gap-2 border transition-all font-mono text-[10px] p-2 leading-none rounded-sm ${
                         showStorageConfig
-                          ? 'border-brand-bronze bg-brand-bronze/10 text-white'
+                          ? 'border-brand-bronze bg-brand-bronze/10 text-white font-bold'
                           : 'border-brand-bronze/40 text-brand-bronze hover:border-brand-bronze hover:bg-brand-bronze/5'
                       }`}
                     >
@@ -555,7 +570,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <span>{showStorageConfig ? "CLOSE CLOUD SETTINGS" : "CONFIGURE CLOUD STORAGE"}</span>
                     </button>
 
-                    <div className="font-mono text-[8px] text-neutral-500 pt-1">RESTORE SYSTEM METRIC DATA</div>
+                    <div className="font-mono text-[9px] text-neutral-400 pt-1">GITHUB DATA SYNCHRONIZATION</div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowGithubConfig(!showGithubConfig);
+                        setShowStorageConfig(false);
+                        setIsEditing(false);
+                      }}
+                      className={`w-full flex items-center justify-center gap-2 border transition-all font-mono text-[10px] p-2 leading-none rounded-sm ${
+                        showGithubConfig
+                          ? 'border-brand-bronze bg-brand-bronze/10 text-white font-bold'
+                          : 'border-neutral-500/40 text-neutral-400 hover:border-brand-bronze hover:bg-brand-bronze/5 hover:text-brand-bronze'
+                      }`}
+                    >
+                      <Database className="w-3.5 h-3.5" />
+                      <span>{showGithubConfig ? "CLOSE GITHUB CONFIG" : "CONFIGURE GITHUB SYNC"}</span>
+                    </button>
+
+                    <div className="font-mono text-[8px] text-neutral-500 pt-1.5">RESTORE SYSTEM METRIC DATA</div>
                     <button
                       onClick={handleResetDefaults}
                       className="w-full flex items-center justify-center gap-2 border border-neutral-800 hover:border-red-500/50 hover:text-red-400 transition-all text-neutral-500 font-mono text-[9px] p-2 leading-none rounded-sm bg-black/10"
@@ -864,6 +897,243 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         )}
                       </div>
 
+                    </div>
+                  ) : showGithubConfig ? (
+                    <div className="space-y-6 text-left">
+                      <div className="flex justify-between items-center pb-2 border-b border-brand-bronze/20">
+                        <h4 className="font-mono text-[11px] text-brand-bronze uppercase flex items-center gap-2">
+                          <Database className="w-4 h-4 text-brand-bronze" />
+                          <span>GITHUB REPOSITORY DATA SYNCHRONIZATION</span>
+                        </h4>
+                        <button
+                          type="button"
+                          onClick={() => setShowGithubConfig(false)}
+                          className="font-mono text-[10px] hover:underline hover:text-white text-zinc-400"
+                        >
+                          CLOSE
+                        </button>
+                      </div>
+
+                      <div className={`p-4 rounded-sm text-xs space-y-2 border ${
+                        theme === 'dark' 
+                          ? 'bg-neutral-900/50 border-neutral-800 text-zinc-300' 
+                          : 'bg-neutral-100 border-neutral-200 text-brand-black'
+                      }`}>
+                        <span className="font-bold font-mono text-[9px] text-brand-bronze block">💡 STATIC HOSTING DATA PERSISTENCE (GITHUB)</span>
+                        <p className="leading-relaxed text-[11px]">
+                          By connecting your portfolio straight to your GitHub repository, all operations (Add, Edit, Delete, Reset) are automatically committed directly to your <code className="bg-black/15 px-1 font-mono text-[10px]">data.json</code> or <code className="bg-black/15 px-1 font-mono text-[10px]">projects-db.json</code> file on GitHub.
+                        </p>
+                        <p className="leading-relaxed text-[11px] text-zinc-400">
+                          This maintains complete consistency without databases, meaning other devices and public visitors instantly view your updated portfolio directly from GitHub.
+                        </p>
+                      </div>
+
+                      {/* Enabled Toggle */}
+                      <div className="flex items-center justify-between p-3 border border-neutral-800/40 rounded-sm bg-black/10">
+                        <div className="space-y-1 text-left mr-4">
+                          <label className="font-mono text-[10px] font-bold text-brand-bronze block uppercase">ENABLE GITHUB AUTOMATED SYNC</label>
+                          <span className="text-[10px] text-neutral-400 block leading-tight">If disabled, the application uses local caches and fallback standard container file storage.</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setGithubSettingsState(prev => ({ ...prev, enabled: !prev.enabled }))}
+                          className="text-brand-bronze focus:outline-none transition-transform active:scale-95"
+                        >
+                          {githubSettings.enabled ? (
+                            <ToggleRight className="w-9 h-9" />
+                          ) : (
+                            <ToggleLeft className="w-9 h-9 text-neutral-500" />
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Credentials Input Grid */}
+                      <div className={`space-y-4 p-4 rounded-sm border ${
+                        theme === 'dark' ? 'bg-neutral-900/30 border-neutral-800' : 'bg-neutral-50 border-neutral-200'
+                      }`}>
+                        <h5 className="font-mono text-[10px] text-brand-bronze uppercase">// GITHUB REPOSITORY CONFIG DETAILS</h5>
+                        
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <label className="font-mono text-[9px] text-neutral-400 block">GITHUB PERSONAL ACCESS TOKEN (PAT)</label>
+                            <input
+                              type="password"
+                              value={githubSettings.token}
+                              onChange={(e) => setGithubSettingsState(prev => ({ ...prev, token: e.target.value }))}
+                              placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                              className={`w-full text-xs p-2.5 rounded-sm border focus:border-brand-bronze outline-none ${
+                                theme === 'dark'
+                                  ? 'bg-neutral-900 border-neutral-800 text-neutral-300 placeholder-neutral-600'
+                                  : 'bg-white border-neutral-300 text-neutral-700 placeholder-neutral-400'
+                              }`}
+                            />
+                            <span className="font-mono text-[8px] text-neutral-500 block">* Stored only locally in your browser cache. Needs scopes: "repo" or "public_repo".</span>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <label className="font-mono text-[9px] text-neutral-400 block">REPOSITORY OWNER</label>
+                              <input
+                                type="text"
+                                value={githubSettings.owner}
+                                onChange={(e) => setGithubSettingsState(prev => ({ ...prev, owner: e.target.value }))}
+                                placeholder="e.g. bon2262"
+                                className={`w-full text-xs p-2.5 rounded-sm border focus:border-brand-bronze outline-none ${
+                                  theme === 'dark'
+                                    ? 'bg-neutral-900 border-neutral-800 text-neutral-300 placeholder-neutral-600'
+                                    : 'bg-white border-neutral-300 text-neutral-700 placeholder-neutral-400'
+                                }`}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="font-mono text-[9px] text-neutral-400 block">REPOSITORY NAME</label>
+                              <input
+                                type="text"
+                                value={githubSettings.repo}
+                                onChange={(e) => setGithubSettingsState(prev => ({ ...prev, repo: e.target.value }))}
+                                placeholder="e.g. gubw-portfolio"
+                                className={`w-full text-xs p-2.5 rounded-sm border focus:border-brand-bronze outline-none ${
+                                  theme === 'dark'
+                                    ? 'bg-neutral-900 border-neutral-800 text-neutral-300 placeholder-neutral-600'
+                                    : 'bg-white border-neutral-300 text-neutral-700 placeholder-neutral-400'
+                                }`}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <label className="font-mono text-[9px] text-neutral-400 block">TARGET BRANCH</label>
+                              <input
+                                type="text"
+                                value={githubSettings.branch}
+                                onChange={(e) => setGithubSettingsState(prev => ({ ...prev, branch: e.target.value }))}
+                                placeholder="main"
+                                className={`w-full text-xs p-2.5 rounded-sm border focus:border-brand-bronze outline-none ${
+                                  theme === 'dark'
+                                    ? 'bg-neutral-900 border-neutral-800 text-neutral-300 placeholder-neutral-600'
+                                    : 'bg-white border-neutral-300 text-neutral-700 placeholder-neutral-400'
+                                }`}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="font-mono text-[9px] text-neutral-400 block">TARGET JSON FILE PATH</label>
+                              <input
+                                type="text"
+                                value={githubSettings.filePath}
+                                onChange={(e) => setGithubSettingsState(prev => ({ ...prev, filePath: e.target.value }))}
+                                placeholder="projects-db.json"
+                                className={`w-full text-xs p-2.5 rounded-sm border focus:border-brand-bronze outline-none ${
+                                  theme === 'dark'
+                                    ? 'bg-neutral-900 border-neutral-800 text-neutral-300 placeholder-neutral-600'
+                                    : 'bg-white border-neutral-300 text-neutral-700 placeholder-neutral-400'
+                                }`}
+                              />
+                              <span className="font-mono text-[8px] text-neutral-500 block">* e.g. "projects-db.json" or "src/data.json"</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Save Credentials */}
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            saveGithubSettings(githubSettings);
+                            alert('GitHub Sync configurations settings successfully saved to Local Cache overrides! Active data pipeline will reflect this instantly.');
+                          }}
+                          className="w-full bg-brand-bronze text-black hover:bg-brand-bronze/85 py-3 px-4 font-mono font-bold text-xs uppercase rounded-sm transition-all"
+                        >
+                          SAVE GITHUB CONFIG OVERRIDES
+                        </button>
+                      </div>
+
+                      {/* Connection tester */}
+                      <div className="border-t border-neutral-800 pt-6 space-y-3">
+                        <span className="font-mono text-[10px] text-brand-bronze block uppercase">// GITHUB REPOSITORY DIAGNOSTIC SANDBOX</span>
+                        <div className={`p-4 rounded-sm border flex flex-col sm:flex-row gap-4 items-center justify-between ${
+                          theme === 'dark' ? 'bg-[#161616]/30 border-neutral-800' : 'bg-[#E9E5DE]/20 border-neutral-200'
+                        }`}>
+                          <div className="space-y-1 text-left sm:flex-1">
+                            <h6 className="font-display font-semibold text-xs">Test Repository Integration</h6>
+                            <p className="text-[11px] text-neutral-400 mr-2">
+                              Checks credentials by pulling the current file from GitHub. Highly recommended to verify permissions.
+                            </p>
+                          </div>
+
+                          <div className="flex flex-col items-center gap-2">
+                            <button
+                              type="button"
+                              disabled={isTestingGithub}
+                              onClick={async () => {
+                                setIsTestingGithub(true);
+                                setGithubTestResult(null);
+                                try {
+                                  // Verify the connection
+                                  const list = await fetchProjectsFromGithub(githubSettings);
+                                  if (list) {
+                                    setGithubTestResult({
+                                      success: true,
+                                      message: `INTEGRATION VERIFIED: Successfully pulled existing projects data file. Found ${list.length} project items.`,
+                                      count: list.length
+                                    });
+                                  } else {
+                                    setGithubTestResult({
+                                      success: true,
+                                      message: `INTEGRATION SUCCESSFUL (NEW PATH): File does not exist yet at specified path. It will be initialized on next catalog project modification.`,
+                                      count: 0
+                                    });
+                                  }
+                                } catch (err: any) {
+                                  setGithubTestResult({
+                                    success: false,
+                                    message: `CONNECTION FAILED: ${err?.message || err}`
+                                  });
+                                } finally {
+                                  setIsTestingGithub(false);
+                                }
+                              }}
+                              className="bg-neutral-800 hover:bg-neutral-700 hover:text-white px-4 py-2 text-[10px] font-mono border border-neutral-700 rounded transition-colors block leading-none"
+                            >
+                              {isTestingGithub ? 'CONTACTING...' : 'TEST REPO CONNECTION'}
+                            </button>
+                          </div>
+                        </div>
+
+                        {githubTestResult && (
+                          <div className={`p-3.5 rounded-sm space-y-1.5 animate-fadeIn text-left border ${
+                            githubTestResult.success 
+                              ? 'bg-emerald-950/15 border-emerald-900/35 text-emerald-400' 
+                              : 'bg-red-950/15 border-red-900/35 text-red-400'
+                          }`}>
+                            <span className="font-mono text-[9px] block font-bold">
+                              {githubTestResult.success ? '✓ REPOSITORY RESPONSE RECEIVED' : '❌ DIAGNOSTIC PIPELINE ERROR'}
+                            </span>
+                            <p className="font-mono text-[10px] leading-relaxed">
+                              {githubTestResult.message}
+                            </p>
+                            {githubTestResult.success && githubTestResult.count !== undefined && githubTestResult.count > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (window.confirm('Are you sure you want to completely overwrite your local/offline database with the pulled GitHub file catalog right now?')) {
+                                    fetchProjectsFromGithub(githubSettings).then(pulled => {
+                                      if (pulled) {
+                                        onUpdateProjects(pulled);
+                                        alert('Successfully imported and replaced local catalog with GitHub master file!');
+                                      }
+                                    });
+                                  }
+                                }}
+                                className="mt-2 text-brand-bronze text-[10px] font-mono underline hover:text-white block"
+                              >
+                                OVERWRITE LOCAL / FALLBACK CATALOG WITH REPO COPY
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ) : isEditing ? (
                     <form onSubmit={handleSaveForm} className="space-y-6">

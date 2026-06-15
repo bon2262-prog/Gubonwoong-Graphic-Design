@@ -46,7 +46,12 @@ export default function App() {
   // Sync projects updates with data persistence layer
   const handleUpdateProjects = async (updatedList: Project[]) => {
     setProjects(updatedList);
-    await saveProjectsAsync(updatedList);
+    try {
+      await saveProjectsAsync(updatedList);
+    } catch (err: any) {
+      console.error('Failed to save project data:', err);
+      alert(`[PORTFOLIO SAVE STATE]\nLocal update complete. However, cloud/GitHub synchronization failed.\n\nError details: ${err?.message || err}\n\nPlease check your GitHub credentials, branch names, and internet connection.`);
+    }
   };
 
   const handleOpenContact = () => {
