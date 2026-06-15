@@ -161,6 +161,63 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   const uploadToServer = async (base64: string, filename: string): Promise<string> => {
+    // 1. Try browser direct upload to Catbox first.
+    // This runs from the user's local network/browser session, making it highly reliable and immune to cloud IP blocks!
+    try {
+      let mimeType = 'image/jpeg';
+      let dataString = base64;
+      if (base64.startsWith('data:')) {
+        const parts = base64.split(';base64,');
+        if (parts.length > 1) {
+          dataString = parts[1];
+        }
+        const match = base64.match(/^data:(.*?);base64,/);
+        if (match) {
+          mimeType = match[1];
+        }
+      }
+
+      // Safeguard file extensions to match mimeTypes nicely for Catbox
+      let cleanFilename = filename;
+      if (mimeType.startsWith('video/')) {
+        if (!filename.endsWith('.mp4') && !filename.endsWith('.mov') && !filename.endsWith('.avi') && !filename.endsWith('.webm')) {
+          cleanFilename = `${filename}.mp4`;
+        }
+      }
+
+      // Convert Base64 back to binary data array
+      const byteCharacters = atob(dataString);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: mimeType });
+
+      const catboxForm = new FormData();
+      catboxForm.append('reqtype', 'fileupload');
+      catboxForm.append('fileToUpload', blob, cleanFilename);
+
+      console.log(`[Browser Direct Uploader] Attempting upload of ${cleanFilename} directly to Catbox...`);
+      const catboxRes = await fetch('https://catbox.moe/user/api.php', {
+        method: 'POST',
+        body: catboxForm,
+      });
+
+      if (catboxRes.ok) {
+        const textStr = await catboxRes.text();
+        const finalUrl = textStr.trim();
+        if (finalUrl && finalUrl.startsWith('http')) {
+          console.log(`[Browser Direct Uploader] Success! CDN URL: ${finalUrl}`);
+          return finalUrl;
+        }
+      }
+      console.warn(`[Browser Direct Uploader] Catbox returned code: ${catboxRes.status}. Trying backend API fallback...`);
+    } catch (catboxErr) {
+      console.warn('[Browser Direct Uploader] Direct browser upload failed, trying server API next:', catboxErr);
+    }
+
+    // 2. Primary fallback: Dev Server API storage (local container /uploads/)
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -180,7 +237,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     } catch (e) {
       console.warn('Server upload failed (unreachable/client-only). Falling back to embed-optimized Base64:', e);
     }
-    // Guarantee success by falling back to base64 which works in any client environment
+    // 3. Absolute failsafe: return local base64 so it still renders perfectly inside client session
     return base64;
   };
 
