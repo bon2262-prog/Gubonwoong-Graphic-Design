@@ -16,8 +16,19 @@ import {
   FolderOpen,
   X,
   PlusCircle,
-  Upload
+  Upload,
+  Settings,
+  Database,
+  Globe,
+  Server
 } from 'lucide-react';
+import {
+  getStorageSettings,
+  saveStorageSettings,
+  uploadToCloudProvider,
+  StorageSettings
+} from '../utils/cloudUploader';
+
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -111,6 +122,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [newKeyVisualText, setNewKeyVisualText] = useState('');
   const [newKeyVisualTextPlate, setNewKeyVisualTextPlate] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [storageSettings, setStorageSettingsState] = useState<StorageSettings>(getStorageSettings());
+  const [showStorageConfig, setShowStorageConfig] = useState(false);
+  const [testUploadResult, setTestUploadResult] = useState('');
+  const [isTestingUpload, setIsTestingUpload] = useState(false);
+
 
   // Helper inside component to compress image to stay safe under storage limits
   const compressImage = (file: File, maxWidth = 1000, maxHeight = 1000): Promise<string> => {
@@ -161,63 +177,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   const uploadToServer = async (base64: string, filename: string): Promise<string> => {
-    // 1. Try browser direct upload to Catbox first.
-    // This runs from the user's local network/browser session, making it highly reliable and immune to cloud IP blocks!
+    // 1. First, try the active cloud provider (Cloudinary, Supabase or Catbox)
     try {
-      let mimeType = 'image/jpeg';
-      let dataString = base64;
-      if (base64.startsWith('data:')) {
-        const parts = base64.split(';base64,');
-        if (parts.length > 1) {
-          dataString = parts[1];
-        }
-        const match = base64.match(/^data:(.*?);base64,/);
-        if (match) {
-          mimeType = match[1];
+      if (storageSettings.provider !== 'local') {
+        const cloudUrl = await uploadToCloudProvider(base64, filename, storageSettings);
+        if (cloudUrl) {
+          console.log(`[Admin Uploader] Upload succeeded via client cloud provider:`, cloudUrl);
+          return cloudUrl;
         }
       }
-
-      // Safeguard file extensions to match mimeTypes nicely for Catbox
-      let cleanFilename = filename;
-      if (mimeType.startsWith('video/')) {
-        if (!filename.endsWith('.mp4') && !filename.endsWith('.mov') && !filename.endsWith('.avi') && !filename.endsWith('.webm')) {
-          cleanFilename = `${filename}.mp4`;
-        }
-      }
-
-      // Convert Base64 back to binary data array
-      const byteCharacters = atob(dataString);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: mimeType });
-
-      const catboxForm = new FormData();
-      catboxForm.append('reqtype', 'fileupload');
-      catboxForm.append('fileToUpload', blob, cleanFilename);
-
-      console.log(`[Browser Direct Uploader] Attempting upload of ${cleanFilename} directly to Catbox...`);
-      const catboxRes = await fetch('https://catbox.moe/user/api.php', {
-        method: 'POST',
-        body: catboxForm,
-      });
-
-      if (catboxRes.ok) {
-        const textStr = await catboxRes.text();
-        const finalUrl = textStr.trim();
-        if (finalUrl && finalUrl.startsWith('http')) {
-          console.log(`[Browser Direct Uploader] Success! CDN URL: ${finalUrl}`);
-          return finalUrl;
-        }
-      }
-      console.warn(`[Browser Direct Uploader] Catbox returned code: ${catboxRes.status}. Trying backend API fallback...`);
-    } catch (catboxErr) {
-      console.warn('[Browser Direct Uploader] Direct browser upload failed, trying server API next:', catboxErr);
+    } catch (cloudErr: any) {
+      console.warn('[Admin Uploader] Direct client-cloud upload failed. Attempting local backend API fallback now:', cloudErr);
     }
 
-    // 2. Primary fallback: Dev Server API storage (local container /uploads/)
+    // 2. Primary fallback: Local Dev Server upload API (Express/Vite localhost:3000 container)
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -340,6 +313,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setIsEditing(true);
     setIsCreatingNew(false);
     setSelectedProjectId(proj.id);
+    setShowStorageConfig(false);
   };
 
   const handleCreateNewTrigger = () => {
@@ -366,6 +340,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     });
     setIsEditing(true);
     setIsCreatingNew(true);
+    setShowStorageConfig(false);
   };
 
   const handleDeleteProject = (id: string) => {
@@ -560,23 +535,337 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
 
                   {/* Reset defaults actions bottom */}
-                  <div className={`p-4 border-t uppercase text-center space-y-2 ${
+                  <div className={`p-4 border-t uppercase text-center space-y-2.5 ${
                     theme === 'dark' ? 'border-neutral-800 bg-[#161616]' : 'border-neutral-200 bg-neutral-50'
                   }`}>
-                    <div className="font-mono text-[9px] text-neutral-400">RESTORE SYSTEM METRIC DATA</div>
+                    <div className="font-mono text-[9px] text-neutral-400">CLOUD CDN STORAGE (NETLIFY)</div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowStorageConfig(!showStorageConfig);
+                        setIsEditing(false);
+                      }}
+                      className={`w-full flex items-center justify-center gap-2 border transition-all font-mono text-[10px] p-2 leading-none rounded-sm ${
+                        showStorageConfig
+                          ? 'border-brand-bronze bg-brand-bronze/10 text-white'
+                          : 'border-brand-bronze/40 text-brand-bronze hover:border-brand-bronze hover:bg-brand-bronze/5'
+                      }`}
+                    >
+                      <Settings className="w-3.5 h-3.5" />
+                      <span>{showStorageConfig ? "CLOSE CLOUD SETTINGS" : "CONFIGURE CLOUD STORAGE"}</span>
+                    </button>
+
+                    <div className="font-mono text-[8px] text-neutral-500 pt-1">RESTORE SYSTEM METRIC DATA</div>
                     <button
                       onClick={handleResetDefaults}
-                      className="w-full flex items-center justify-center gap-2 border border-zinc-700/80 hover:border-red-400 hover:text-red-400 transition-all text-neutral-400 font-mono text-[10px] p-2 leading-none rounded-sm"
+                      className="w-full flex items-center justify-center gap-2 border border-neutral-800 hover:border-red-500/50 hover:text-red-400 transition-all text-neutral-500 font-mono text-[9px] p-2 leading-none rounded-sm bg-black/10"
                     >
-                      <RefreshCcw className="w-3 h-3" />
-                      <span>RESET GALLERY TO pristine SEED</span>
+                      <RefreshCcw className="w-2.5 h-2.5" />
+                      <span>RESET CATALOG TO SEED STATUS</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Right Area: Interactive Editor Form */}
                 <div className="w-full md:w-7/12 overflow-y-auto p-6 md:p-8">
-                  {isEditing ? (
+                  {showStorageConfig ? (
+                    <div className="space-y-6 text-left">
+                      <div className="flex justify-between items-center pb-2 border-b border-brand-bronze/20">
+                        <h4 className="font-mono text-[11px] text-brand-bronze uppercase flex items-center gap-2">
+                          <Globe className="w-4 h-4 text-brand-bronze" />
+                          <span>CLOUD STORAGE SERVICE CONFIG (NETLIFY-COMPATIBLE)</span>
+                        </h4>
+                        <button
+                          type="button"
+                          onClick={() => setShowStorageConfig(false)}
+                          className="font-mono text-[10px] hover:underline hover:text-white text-zinc-400"
+                        >
+                          CLOSE
+                        </button>
+                      </div>
+
+                      <div className={`p-4 rounded-sm text-xs space-y-2 border ${
+                        theme === 'dark' 
+                          ? 'bg-neutral-900/50 border-neutral-800 text-zinc-300' 
+                          : 'bg-neutral-100 border-neutral-200 text-brand-black'
+                      }`}>
+                        <span className="font-bold font-mono text-[9px] text-brand-bronze block">💡 STATIC HOSTING TIP (NETLIFY)</span>
+                        <p className="leading-relaxed text-[11px]">
+                          Netlify and other static hosting environments are fully client-side and do not support local server folder uploads (which results in a 404). Setting up <strong>Cloudinary</strong> or <strong>Supabase</strong> allows uploading pictures and videos straight from your browser to a cloud CDN.
+                        </p>
+                        <p className="leading-relaxed text-[11px] text-zinc-400">
+                          Credentials are saved securely inside your browser's persistent cache (localStorage). If you want team deployments to automatically use these channels, define them as environment variables starting with <code className="bg-zinc-900 px-1 font-mono text-white text-[10px]">VITE_</code> inside your Netlify Settings panel.
+                        </p>
+                      </div>
+
+                      {/* Provider Selector */}
+                      <div className="space-y-2">
+                        <label className="font-mono text-[9px] text-neutral-400 block">SELECT STORAGE PROVIDER</label>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {[
+                            { id: 'catbox', label: 'Catbox CDN', desc: 'No signup, free instant' },
+                            { id: 'cloudinary', label: 'Cloudinary', desc: 'Unsigned Preset' },
+                            { id: 'supabase', label: 'Supabase Store', desc: 'REST Direct' },
+                            { id: 'local', label: 'Local API', desc: 'AI Studio Node Host' }
+                          ].map((prov) => (
+                            <button
+                              key={prov.id}
+                              type="button"
+                              onClick={() => {
+                                setStorageSettingsState(prev => ({ ...prev, provider: prov.id as any }));
+                                setTestUploadResult('');
+                              }}
+                              className={`p-3 rounded-sm border flex flex-col text-left transition-all ${
+                                storageSettings.provider === prov.id
+                                  ? 'border-brand-bronze bg-brand-bronze/10 text-white'
+                                  : theme === 'dark'
+                                  ? 'border-neutral-800 bg-[#161616]/50 text-zinc-400 hover:border-neutral-700'
+                                  : 'border-neutral-200 bg-white text-zinc-600 hover:border-neutral-400'
+                              }`}
+                            >
+                              <span className="font-sans font-bold text-[11px]">{prov.label}</span>
+                              <span className="font-mono text-[8px] text-neutral-500 mt-1">{prov.desc}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Cloudinary Section */}
+                      {storageSettings.provider === 'cloudinary' && (
+                        <div className={`space-y-4 p-4 rounded-sm border ${
+                          theme === 'dark' ? 'bg-neutral-900/30 border-neutral-800' : 'bg-neutral-50 border-neutral-200'
+                        }`}>
+                          <h5 className="font-mono text-[10px] text-brand-bronze uppercase">// CLOUDINARY UNSIGNED CONFIG</h5>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <label className="font-mono text-[9px] text-neutral-400 block">CLOUDINARY CLOUD NAME</label>
+                              <input
+                                type="text"
+                                value={storageSettings.cloudinaryCloudName}
+                                onChange={(e) => setStorageSettingsState(prev => ({ ...prev, cloudinaryCloudName: e.target.value }))}
+                                placeholder="e.g. dxyz1234b"
+                                className={`w-full text-xs p-2.5 rounded-sm border focus:border-brand-bronze outline-none ${
+                                  theme === 'dark'
+                                    ? 'bg-neutral-900 border-neutral-800 text-neutral-300 placeholder-neutral-600'
+                                    : 'bg-white border-neutral-300 text-neutral-700 placeholder-neutral-400'
+                                }`}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="font-mono text-[9px] text-neutral-400 block">UNSIGNED UPLOAD PRESET</label>
+                              <input
+                                type="text"
+                                value={storageSettings.cloudinaryUploadPreset}
+                                onChange={(e) => setStorageSettingsState(prev => ({ ...prev, cloudinaryUploadPreset: e.target.value }))}
+                                placeholder="e.g. portfolio_preset"
+                                className={`w-full text-xs p-2.5 rounded-sm border focus:border-brand-bronze outline-none ${
+                                  theme === 'dark'
+                                    ? 'bg-neutral-900 border-neutral-800 text-neutral-300 placeholder-neutral-600'
+                                    : 'bg-white border-neutral-300 text-neutral-700 placeholder-neutral-400'
+                                }`}
+                              />
+                              <span className="font-mono text-[8px] text-neutral-500 block">* Must be set to 'Unsigned' inside Cloudinary Console</span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="font-mono text-[9px] text-neutral-400 block">FOLDER NAME (OPTIONAL)</label>
+                            <input
+                              type="text"
+                              value={storageSettings.cloudinaryFolder}
+                              onChange={(e) => setStorageSettingsState(prev => ({ ...prev, cloudinaryFolder: e.target.value }))}
+                              placeholder="e.g. portfolios"
+                              className={`w-full text-xs p-2.5 rounded-sm border focus:border-brand-bronze outline-none ${
+                                theme === 'dark'
+                                  ? 'bg-neutral-900 border-neutral-800 text-neutral-300 placeholder-neutral-600'
+                                  : 'bg-white border-neutral-300 text-neutral-700 placeholder-neutral-400'
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Supabase Storage Section */}
+                      {storageSettings.provider === 'supabase' && (
+                        <div className={`space-y-4 p-4 rounded-sm border ${
+                          theme === 'dark' ? 'bg-neutral-900/30 border-neutral-800' : 'bg-neutral-50 border-neutral-200'
+                        }`}>
+                          <h5 className="font-mono text-[10px] text-brand-bronze uppercase">// SUPABASE OBJECT STORAGE CONFIG</h5>
+
+                          <div className="space-y-3">
+                            <div className="space-y-1">
+                              <label className="font-mono text-[9px] text-neutral-400 block">SUPABASE PROJECT URL</label>
+                              <input
+                                type="text"
+                                value={storageSettings.supabaseUrl}
+                                onChange={(e) => setStorageSettingsState(prev => ({ ...prev, supabaseUrl: e.target.value }))}
+                                placeholder="https://xxxxxxxxxxxxxxxxxxxx.supabase.co"
+                                className={`w-full text-xs p-2.5 rounded-sm border focus:border-brand-bronze outline-none ${
+                                  theme === 'dark'
+                                    ? 'bg-neutral-900 border-neutral-800 text-neutral-300 placeholder-neutral-600'
+                                    : 'bg-white border-neutral-300 text-neutral-700 placeholder-neutral-400'
+                                }`}
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="font-mono text-[9px] text-neutral-400 block">SUPABASE ANON KEY (PUBLIC API KEY)</label>
+                              <input
+                                type="password"
+                                value={storageSettings.supabaseAnonKey}
+                                onChange={(e) => setStorageSettingsState(prev => ({ ...prev, supabaseAnonKey: e.target.value }))}
+                                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                                className={`w-full text-xs p-2.5 rounded-sm border focus:border-brand-bronze outline-none ${
+                                  theme === 'dark'
+                                    ? 'bg-neutral-900 border-neutral-800 text-neutral-300 placeholder-neutral-600'
+                                    : 'bg-white border-neutral-300 text-neutral-700 placeholder-neutral-400'
+                                }`}
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="font-mono text-[9px] text-neutral-400 block">BUCKET NAME</label>
+                                <input
+                                  type="text"
+                                  value={storageSettings.supabaseBucket}
+                                  onChange={(e) => setStorageSettingsState(prev => ({ ...prev, supabaseBucket: e.target.value }))}
+                                  placeholder="e.g. portfolio-assets"
+                                  className={`w-full text-xs p-2.5 rounded-sm border focus:border-brand-bronze outline-none ${
+                                    theme === 'dark'
+                                      ? 'bg-neutral-900 border-neutral-800 text-neutral-300 placeholder-neutral-600'
+                                      : 'bg-white border-neutral-300 text-neutral-700 placeholder-neutral-400'
+                                  }`}
+                                />
+                                <span className="font-mono text-[8px] text-neutral-500 block">* Bucket policies must allow Public Select & Insert</span>
+                              </div>
+                              <div className="space-y-1">
+                                <label className="font-mono text-[9px] text-neutral-400 block">FOLDER PATH IN BUCKET (OPTIONAL)</label>
+                                <input
+                                  type="text"
+                                  value={storageSettings.supabaseFolder}
+                                  onChange={(e) => setStorageSettingsState(prev => ({ ...prev, supabaseFolder: e.target.value }))}
+                                  placeholder="e.g. uploads"
+                                  className={`w-full text-xs p-2.5 rounded-sm border focus:border-brand-bronze outline-none ${
+                                    theme === 'dark'
+                                      ? 'bg-neutral-900 border-neutral-800 text-neutral-300 placeholder-neutral-600'
+                                      : 'bg-white border-neutral-300 text-neutral-700 placeholder-neutral-400'
+                                  }`}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Catbox Section */}
+                      {storageSettings.provider === 'catbox' && (
+                        <div className={`p-4 rounded-sm border border-dashed text-xs space-y-2 ${
+                          theme === 'dark' ? 'border-neutral-800 bg-[#161616]/50' : 'border-neutral-300 bg-[#E9E5DE]/20'
+                        }`}>
+                          <span className="text-brand-bronze block font-bold text-[10px] font-mono">// CATBOX ANONYMOUS CDN</span>
+                          <p className="text-[11px] leading-relaxed text-neutral-400">
+                            Catbox is an excellent, lightweight hosting service that accepts direct file uploads anonymously from the client. Files are processed cleanly inside your browser, hosted permanently on global fast CDNs (<code className="text-brand-bronze font-mono">https://files.catbox.moe/...</code>), and accessible from Netlify instantly with zero configurations required.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Local Section */}
+                      {storageSettings.provider === 'local' && (
+                        <div className={`p-4 rounded-sm border border-dashed text-xs space-y-2 ${
+                          theme === 'dark' ? 'border-neutral-800 bg-[#161616]/50' : 'border-neutral-300 bg-[#E9E5DE]/20'
+                        }`}>
+                          <span className="text-red-400 block font-bold text-[10px] font-mono">// CONTAINER FALLBACK STORAGE</span>
+                          <p className="text-[11px] leading-relaxed text-neutral-400">
+                            Standard system directories write straight to the local container of this workspace. Useful during active local development (runs Express endpoint <code className="text-zinc-300 font-mono">/api/upload</code>) but <strong>will return a 404</strong> on fully static deployment providers.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Save Credentials */}
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            saveStorageSettings(storageSettings);
+                            alert('Cloud storage configuration successfully saved! These credentials will be used whenever uploading images or videos.');
+                          }}
+                          className="w-full bg-brand-bronze text-black hover:bg-brand-bronze/85 py-3 px-4 font-mono font-bold text-xs uppercase rounded-sm transition-all"
+                        >
+                          SAVE PERSISTED SETTINGS
+                        </button>
+                      </div>
+
+                      {/* Interactive Uploader Test Sandbox */}
+                      <div className="border-t border-neutral-800 pt-6 space-y-3">
+                        <span className="font-mono text-[10px] text-brand-bronze block uppercase">// STORAGE CONNECTION SANDBOX</span>
+                        <div className={`p-4 rounded-sm border flex flex-col sm:flex-row gap-4 items-center justify-between ${
+                          theme === 'dark' ? 'bg-[#161616]/30 border-neutral-800' : 'bg-[#E9E5DE]/20 border-neutral-200'
+                        }`}>
+                          <div className="space-y-1 text-left sm:flex-1">
+                            <h6 className="font-display font-semibold text-xs">Interactive Upload Test</h6>
+                            <p className="text-[11px] text-neutral-400">
+                              Drop or choose a small image here to check the configuration and make sure connection logs run successfully.
+                            </p>
+                          </div>
+
+                          <div className="flex flex-col items-center gap-2">
+                            <label className="relative cursor-pointer bg-neutral-800 hover:bg-neutral-700 hover:text-white px-3 py-1.5 text-[10px] font-mono border border-neutral-700 rounded transition-colors block">
+                              <span>{isTestingUpload ? 'UPLOADING...' : 'TEST CDN UPLOAD'}</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                disabled={isTestingUpload}
+                                onChange={async (e) => {
+                                  const files = e.target.files;
+                                  if (!files || files.length === 0) return;
+                                  setIsTestingUpload(true);
+                                  setTestUploadResult('');
+                                  try {
+                                    const file = files[0];
+                                    const b64 = await compressImage(file, 600, 600);
+                                    const resultUrl = await uploadToCloudProvider(b64, file.name, storageSettings);
+                                    setTestUploadResult(resultUrl);
+                                    console.log('Upload Connection succeeded:', resultUrl);
+                                  } catch (testErr: any) {
+                                    console.error('Connection check failed:', testErr);
+                                    alert(`Upload connection failed!\n${testErr?.message || testErr}`);
+                                  } finally {
+                                    setIsTestingUpload(false);
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+                        </div>
+
+                        {testUploadResult && (
+                          <div className="p-3.5 bg-emerald-950/15 border border-emerald-900/35 rounded-sm space-y-2 animate-fadeIn text-left">
+                            <span className="font-mono text-[9px] text-emerald-400 block font-bold">✓ CONNECTION SUCCESSFUL</span>
+                            <div className="flex gap-3 items-center">
+                              <img
+                                src={testUploadResult}
+                                alt="Test result"
+                                className="w-12 h-12 object-cover border border-emerald-950 rounded-sm bg-neutral-900"
+                              />
+                              <div className="flex-1 space-y-1">
+                                <label className="font-mono text-[8px] text-emerald-500/80 block uppercase">SECURE CLOUD CDN REPOSITORY PATH</label>
+                                <input
+                                  type="text"
+                                  readOnly
+                                  value={testUploadResult}
+                                  className="w-full font-mono text-[10px] p-1.5 bg-neutral-900 border border-neutral-850 rounded text-zinc-300"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                    </div>
+                  ) : isEditing ? (
                     <form onSubmit={handleSaveForm} className="space-y-6">
                       <div className="flex justify-between items-center pb-2 border-b border-brand-bronze/20">
                         <h4 className="font-mono text-xs text-brand-bronze uppercase">
