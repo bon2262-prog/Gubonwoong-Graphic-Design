@@ -1,8 +1,8 @@
 [
   {
     "id": "liquid-geometry",
-    "title": "Liquid Geometry",
-    "subtitle": "Latest Fluid Dynamics Study",
+    "title": "SKIN1004 3D Motion",
+    "subtitle": "SKIN1004",
     "year": "2026",
     "category": "3D Design",
     "aspectRatio": "16:9",
@@ -11,9 +11,11 @@
     "isExperiment": false,
     "concept": "A visual exploration of liquid motion inspired by digital erosion, light refraction, and premium industrial alloys. Examining the fluid threshold of metallic state transitions under simulated extreme atmospheric pressures.",
     "keyVisuals": [
-      "/src/assets/images/liquid_geometry_1780900490463.png",
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop"
+      "https://res.cloudinary.com/drh1az1qm/video/upload/v1781529787/portfolio/vucslnnzvvrapqjzq5ag.mp4",
+      "https://res.cloudinary.com/drh1az1qm/video/upload/v1781529822/portfolio/q66ee0xxda9lydnmu9hm.mp4",
+      "https://res.cloudinary.com/drh1az1qm/image/upload/v1781529849/portfolio/jcar44vkantpad1trskc.jpg",
+      "https://res.cloudinary.com/drh1az1qm/image/upload/v1781529857/portfolio/eecxdbnr41ubxaauz8nn.jpg",
+      "https://res.cloudinary.com/drh1az1qm/image/upload/v1781529857/portfolio/en50uhpwuhe8v342t6wk.jpg"
     ],
     "sketchUrl": "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=600&auto=format&fit=crop",
     "referenceUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600&auto=format&fit=crop",
@@ -21,7 +23,15 @@
     "materialUrl": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600&auto=format&fit=crop",
     "motionUrl": "dynamic_active_canvas",
     "finalVisualUrl": "/src/assets/images/liquid_geometry_1780900490463.png",
-    "client": "Seoul Museum of Contemporary Art"
+    "client": "Seoul Museum of Contemporary Art",
+    "bannerTag": "스킨천사 ",
+    "keyVisualsLayout": [
+      "full",
+      "half",
+      "half",
+      "half",
+      "half"
+    ]
   },
   {
     "id": "chrome-bloom",
