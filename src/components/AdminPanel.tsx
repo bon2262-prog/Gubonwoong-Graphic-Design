@@ -20,7 +20,8 @@ import {
   Settings,
   Database,
   Globe,
-  Server
+  Server,
+  GripVertical
 } from 'lucide-react';
 import {
   getStorageSettings,
@@ -129,6 +130,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const [newKeyVisualText, setNewKeyVisualText] = useState('');
   const [newKeyVisualTextPlate, setNewKeyVisualTextPlate] = useState('');
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [storageSettings, setStorageSettingsState] = useState<StorageSettings>(getStorageSettings());
   const [showStorageConfig, setShowStorageConfig] = useState(false);
@@ -419,6 +421,96 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       keyVisuals: updated,
       keyVisualsLayout: updatedLayouts
     });
+  };
+
+  const handleMoveKeyVisualUp = (idx: number) => {
+    if (idx <= 0) return;
+    const updated = [...formState.keyVisuals];
+    const updatedLayouts = [...(formState.keyVisualsLayout || [])];
+    
+    // Swap source elements
+    const temp = updated[idx];
+    updated[idx] = updated[idx - 1];
+    updated[idx - 1] = temp;
+    
+    // Swap corresponding layout items (ensuring length matches)
+    while (updatedLayouts.length < updated.length) {
+      updatedLayouts.push('full');
+    }
+    const tempLayout = updatedLayouts[idx];
+    updatedLayouts[idx] = updatedLayouts[idx - 1];
+    updatedLayouts[idx - 1] = tempLayout;
+
+    setFormState({
+      ...formState,
+      keyVisuals: updated,
+      keyVisualsLayout: updatedLayouts
+    });
+  };
+
+  const handleMoveKeyVisualDown = (idx: number) => {
+    if (idx >= formState.keyVisuals.length - 1) return;
+    const updated = [...formState.keyVisuals];
+    const updatedLayouts = [...(formState.keyVisualsLayout || [])];
+    
+    // Swap source elements
+    const temp = updated[idx];
+    updated[idx] = updated[idx + 1];
+    updated[idx + 1] = temp;
+    
+    // Swap corresponding layout items (ensuring length matches)
+    while (updatedLayouts.length < updated.length) {
+      updatedLayouts.push('full');
+    }
+    const tempLayout = updatedLayouts[idx];
+    updatedLayouts[idx] = updatedLayouts[idx + 1];
+    updatedLayouts[idx + 1] = tempLayout;
+
+    setFormState({
+      ...formState,
+      keyVisuals: updated,
+      keyVisualsLayout: updatedLayouts
+    });
+  };
+
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    setDraggedIdx(idx);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDragEnter = (e: React.DragEvent, targetIdx: number) => {
+    if (draggedIdx === null || draggedIdx === targetIdx) return;
+    
+    const updated = [...formState.keyVisuals];
+    const updatedLayouts = [...(formState.keyVisualsLayout || [])];
+    while (updatedLayouts.length < updated.length) {
+      updatedLayouts.push('full');
+    }
+
+    // Swap elements
+    const temp = updated[draggedIdx];
+    updated[draggedIdx] = updated[targetIdx];
+    updated[targetIdx] = temp;
+
+    const tempLayout = updatedLayouts[draggedIdx];
+    updatedLayouts[draggedIdx] = updatedLayouts[targetIdx];
+    updatedLayouts[targetIdx] = tempLayout;
+
+    setFormState({
+      ...formState,
+      keyVisuals: updated,
+      keyVisualsLayout: updatedLayouts
+    });
+    
+    setDraggedIdx(targetIdx);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null);
   };
 
   return (
@@ -1507,7 +1599,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <div className="flex justify-between items-center">
                           <div>
                             <label className="font-mono text-[9px] text-neutral-400 block">// KEY GALLERY SHOTPLATES ({formState.keyVisuals?.length || 0} media assets)</label>
-                            <span className="text-[9px] text-neutral-500 font-mono block mt-0.5">Attach multiple portfolio image/video rendering files at once</span>
+                            <span className="text-[9px] text-neutral-500 font-mono block mt-0.5">Attach multiple files. Drag image blocks directly or use ▲/▼ to change order.</span>
                           </div>
                           <label className="inline-flex items-center gap-1.5 cursor-pointer bg-brand-bronze hover:bg-brand-bronze/80 text-black px-3 py-1.5 font-mono text-[10px] font-bold rounded-sm transition-colors uppercase">
                             <Upload className="w-3.5 h-3.5" />
@@ -1573,7 +1665,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               return (
                                 <div 
                                   key={idx} 
-                                  className="group relative bg-[#161616] border border-neutral-800 rounded overflow-hidden aspect-video"
+                                  draggable
+                                  onDragStart={(e) => handleDragStart(e, idx)}
+                                  onDragOver={handleDragOver}
+                                  onDragEnter={(e) => handleDragEnter(e, idx)}
+                                  onDragEnd={handleDragEnd}
+                                  className={`group relative bg-[#161616] border rounded overflow-hidden aspect-video transition-all duration-200 cursor-grab active:cursor-grabbing select-none ${
+                                    draggedIdx === idx 
+                                      ? 'border-brand-bronze scale-95 opacity-40 shadow-inner' 
+                                      : 'border-neutral-800 hover:border-brand-bronze/40 hover:shadow-lg'
+                                  }`}
                                 >
                                   {isTxt ? (
                                     <div className="w-full h-full p-2 bg-neutral-900 border border-neutral-800 overflow-y-auto flex items-center justify-center">
@@ -1615,7 +1716,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                                   <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2 z-10">
                                     <div className="flex justify-between items-start w-full">
-                                      <span className="font-mono text-[8px] text-zinc-400 uppercase">
+                                      <span className="font-mono text-[8px] text-zinc-300 uppercase flex items-center gap-1">
+                                        <GripVertical className="w-2.5 h-2.5 text-brand-bronze shrink-0" />
                                         {isTxt ? 'TEXT' : isVimeo ? 'VIMEO' : isVid ? 'VIDEO' : 'IMAGE'} 0{idx + 1}
                                       </span>
                                       <select
@@ -1637,13 +1739,43 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                         <option value="half">2단 (HALF)</option>
                                       </select>
                                     </div>
-                                    <button 
-                                      type="button" 
-                                      onClick={() => handleRemoveKeyVisual(idx)} 
-                                      className="text-red-400 font-bold hover:scale-110 hover:text-red-300 transition-all text-[9.5px] font-mono bg-black/85 px-2 py-1 rounded self-end"
-                                    >
-                                      DELETE
-                                    </button>
+                                    <div className="flex justify-between items-center w-full mt-auto">
+                                      <div className="flex items-center gap-1 bg-neutral-900 border border-neutral-800 p-0.5 rounded">
+                                        <button
+                                          type="button"
+                                          disabled={idx === 0}
+                                          onClick={() => handleMoveKeyVisualUp(idx)}
+                                          className={`px-1.5 py-0.5 rounded text-[7px] font-bold transition-all ${
+                                            idx === 0
+                                              ? 'text-zinc-600 cursor-not-allowed opacity-30 bg-neutral-950/20'
+                                              : 'text-brand-bronze bg-zinc-800 hover:bg-zinc-750 hover:text-white'
+                                          }`}
+                                          title="Move Up"
+                                        >
+                                          ▲
+                                        </button>
+                                        <button
+                                          type="button"
+                                          disabled={idx === formState.keyVisuals.length - 1}
+                                          onClick={() => handleMoveKeyVisualDown(idx)}
+                                          className={`px-1.5 py-0.5 rounded text-[7px] font-bold transition-all ${
+                                            idx === formState.keyVisuals.length - 1
+                                              ? 'text-zinc-600 cursor-not-allowed opacity-30 bg-neutral-950/20'
+                                              : 'text-brand-bronze bg-zinc-800 hover:bg-zinc-750 hover:text-white'
+                                          }`}
+                                          title="Move Down"
+                                        >
+                                          ▼
+                                        </button>
+                                      </div>
+                                      <button 
+                                        type="button" 
+                                        onClick={() => handleRemoveKeyVisual(idx)} 
+                                        className="text-red-400 font-bold hover:scale-105 hover:text-red-200 transition-all text-[9px] font-mono bg-black/85 px-1.5 py-1 rounded"
+                                      >
+                                        DELETE
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
                               );
