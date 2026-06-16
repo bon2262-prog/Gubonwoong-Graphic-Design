@@ -123,7 +123,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     materialUrl: '',
     motionUrl: '',
     finalVisualUrl: '',
-    bannerTag: ''
+    bannerTag: '',
+    client: ''
   });
 
   const [newKeyVisualText, setNewKeyVisualText] = useState('');
@@ -303,7 +304,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === '1111') {
+    if (password === 'a0106180') {
       setIsAuthenticated(true);
       setAuthError(false);
     } else {
@@ -349,7 +350,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       materialUrl: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600&auto=format&fit=crop',
       motionUrl: 'chrome_pulse_wave',
       finalVisualUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop',
-      bannerTag: 'LATEST DIGITAL SCULPTURE'
+      bannerTag: 'LATEST DIGITAL SCULPTURE',
+      client: 'Personal Art Commission'
     });
     setIsEditing(true);
     setIsCreatingNew(true);
@@ -464,9 +466,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 
                 <div className="space-y-2 max-w-sm">
                   <h3 className="font-display text-xl font-bold uppercase tracking-tight">System Access Required</h3>
-                  <p className="font-sans text-xs text-neutral-400">
-                    Entering administrative dashboard requires security verification credentials. Password configured by user is <code className="font-mono text-brand-bronze border-b border-brand-bronze/40 px-1 font-bold">1111</code>.
-                  </p>
                 </div>
 
                 <form onSubmit={handleLogin} className="w-full max-w-xs space-y-3">
@@ -476,8 +475,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full font-mono text-center text-lg p-3 bg-neutral-900 border border-neutral-800 focus:border-brand-bronze text-white tracking-widest outline-none rounded-sm"
-                    placeholder="••••"
-                    maxLength={4}
+                    placeholder="ENTER PASSWORD"
+                    maxLength={20}
                     autoFocus
                   />
                   
@@ -1193,8 +1192,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         />
                       </div>
 
-                      {/* Technical Tags Metadata */}
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {/* Year & Client Metadata */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <label className="font-mono text-[9px] text-neutral-400 block">YEAR</label>
                           <input
@@ -1202,15 +1201,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             required
                             value={formState.year}
                             onChange={(e) => setFormState({ ...formState, year: e.target.value })}
-                            className="w-full text-xs p-2.5 bg-neutral-900/50 border border-zinc-850 text-white rounded-sm"
+                            className="w-full text-xs p-2.5 bg-neutral-900/50 border border-zinc-850 text-white rounded-sm focus:border-brand-bronze"
                           />
                         </div>
+                        <div className="space-y-1">
+                          <label className="font-mono text-[9px] text-neutral-400 block">CLIENT</label>
+                          <input
+                            type="text"
+                            placeholder="Personal Art Commission"
+                            value={formState.client || ''}
+                            onChange={(e) => setFormState({ ...formState, client: e.target.value })}
+                            className="w-full text-xs p-2.5 bg-neutral-900/50 border border-zinc-850 text-white rounded-sm focus:border-brand-bronze"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Technical Tags Metadata */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="space-y-1">
                           <label className="font-mono text-[9px] text-neutral-400 block">CATEGORY</label>
                           <select
                             value={formState.category}
                             onChange={(e) => setFormState({ ...formState, category: e.target.value })}
-                            className="w-full text-xs p-2.5 bg-neutral-900 text-white outline-none rounded-sm border"
+                            className="w-full text-xs p-2.5 bg-neutral-900 text-white outline-none rounded-sm border border-zinc-850 focus:border-brand-bronze"
                           >
                             <option value="3D Design">3D Design</option>
                             <option value="Brand Identity">Brand Identity</option>
@@ -1223,7 +1236,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <select
                             value={formState.aspectRatio}
                             onChange={(e) => setFormState({ ...formState, aspectRatio: e.target.value as any })}
-                            className="w-full text-xs p-2.5 bg-neutral-900 text-white outline-none rounded-sm border"
+                            className="w-full text-xs p-2.5 bg-neutral-900 text-white outline-none rounded-sm border border-zinc-850 focus:border-brand-bronze"
                           >
                             <option value="1:1">1:1 (Square)</option>
                             <option value="4:5">4:5 (Portrait)</option>
@@ -1236,7 +1249,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <select
                             value={formState.galleryLayout || 'stack'}
                             onChange={(e) => setFormState({ ...formState, galleryLayout: e.target.value as any })}
-                            className="w-full text-xs p-2.5 bg-neutral-900 text-white outline-none rounded-sm border"
+                            className="w-full text-xs p-2.5 bg-neutral-900 text-white outline-none rounded-sm border border-zinc-850 focus:border-brand-bronze"
                           >
                             <option value="stack">1 Column Stack</option>
                             <option value="grid2">2 Columns Grid</option>

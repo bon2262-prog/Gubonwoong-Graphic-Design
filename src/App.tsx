@@ -80,18 +80,22 @@ export default function App() {
   const firstHalfGrid = regularProjects.slice(0, 3);
   const secondHalfGrid = regularProjects.slice(3);
 
-  // Keyboard shortcut to close overlays
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsContactOpen(false);
-        setIsAdminOpen(false);
-        setSelectedProjectId(null);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+      // Keyboard shortcut to close overlays & open admin silently
+      useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+          if (e.key === 'Escape') {
+            setIsContactOpen(false);
+            setIsAdminOpen(false);
+            setSelectedProjectId(null);
+          }
+          // Silent secret admin access shortcut for development (Ctrl + Alt + A)
+          if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'a') {
+            setIsAdminOpen(prev => !prev);
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, []);
 
   return (
     <div className={`min-h-screen transition-colors duration-500 overflow-x-hidden relative ${
@@ -105,10 +109,11 @@ export default function App() {
       {/* --- FLOATING LEFT COLUMN METADATA BRAND: DOES NOT SCROLL --- */}
       <header className="hidden lg:block fixed top-[104px] left-12 w-64 z-[50] select-none pointer-events-none">
         {/* Subtitles Stack placed proportionally below the h-20 (80px) top banner */}
-        <div className="space-y-1 font-mono text-[10px] text-brand-muted uppercase tracking-widest pl-0.5 pointer-events-auto">
-          <div>Graphic Designer</div>
+        <div className="space-y-1 font-mono text-[10px] text-brand-muted tracking-widest pl-0.5 pointer-events-auto">
+          
           <div>3D Virtual Artist</div>
-          <div>Art Director // Seoul</div>
+          <div>bon2262@naver.com </div>
+          <div>@weakfdtion </div>
         </div>
       </header>
 
@@ -122,17 +127,17 @@ export default function App() {
           className="cursor-pointer group pointer-events-auto"
         >
           {/* Mobile Name Trigger */}
-          <span className="lg:hidden font-display font-bold text-base tracking-tight text-brand-bronze uppercase">
+          <span className="lg:hidden font-display font-bold text-sm sm:text-base tracking-tight text-brand-bronze uppercase">
             GBW
           </span>
           {/* Desktop Logo: perfectly height-aligned inside the h-20 nav container */}
-          <h1 className="hidden lg:block font-display text-2xl font-bold tracking-tight uppercase leading-none text-balance hover:text-brand-bronze transition-colors">
+          <h1 className="hidden lg:block font-display text-xl sm:text-2xl font-bold tracking-tight uppercase leading-none text-balance hover:text-brand-bronze transition-colors">
             GUBONWOONG
           </h1>
         </div>
 
         {/* Menu Items (EXACTLY 3) with dynamic slider highlighting */}
-        <div className="flex items-center gap-6 sm:gap-8 font-mono text-xs tracking-widest uppercase">
+        <div className="flex items-center gap-4 sm:gap-8 font-mono text-[10px] sm:text-xs tracking-widest uppercase">
           <button
             onClick={() => {
               setSelectedProjectId(null);
@@ -181,7 +186,7 @@ export default function App() {
           </button>
         </div>
 
-        {/* Luxury Utility Tools Line (Theme toggles, Admin console trigger) */}
+        {/* Luxury Utility Tools Line (Theme toggles) */}
         <div className="flex items-center gap-3 border-l border-brand-muted/20 pl-6">
           {/* Theme switcher */}
           <button
@@ -194,20 +199,6 @@ export default function App() {
             title="Toggle Visual Theme"
           >
             {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-          </button>
-
-          {/* Admin console button */}
-          <button
-            onClick={() => setIsAdminOpen(true)}
-            className={`p-2 rounded-full border transition-all ${
-              theme === 'dark'
-                ? 'border-neutral-800 hover:border-neutral-700 bg-neutral-900 text-neutral-400 hover:text-brand-bronze'
-                : 'border-neutral-300 hover:border-neutral-400 bg-white text-zinc-600 hover:text-brand-bronze'
-            }`}
-            title="Portfolio Studio Settings"
-            id="admin-settings-anchor"
-          >
-            <Settings className="w-3.5 h-3.5" />
           </button>
         </div>
       </nav>
@@ -255,12 +246,22 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4 }}
-              className="space-y-12 pb-16"
+              className="space-y-10 pb-16"
             >
               
+              {/* Responsive Mobile Profile Header */}
+              {/*<div className="lg:hidden px-6 pt-4 space-y-1.5 select-auto border-b border-brand-muted/5 pb-4">
+                <span className="font-mono text-[9px] tracking-widest text-brand-bronze font-bold block uppercase"></span>
+                <div className="space-y-1 font-mono text-[10px] text-brand-muted tracking-widest">
+                  <div>3D Virtual Artist</div>
+                  <div>bon2262@naver.com</div>
+                  <div>@weakfdtion</div>
+                </div>
+              </div> */}
+
               {/* --- 1. HERO FEATURED PROJECT SECTION --- */}
               {featuredProject && (
-                <section className="px-6 md:px-12 pt-4">
+                <section className="px-6 md:px-12 pt-2">
                   <div 
                     onClick={() => setSelectedProjectId(featuredProject.id)}
                     className="group relative cursor-pointer overflow-hidden rounded-sm border border-neutral-800/10 dark:border-neutral-200/5 aspect-video w-full"
@@ -275,34 +276,34 @@ export default function App() {
                     />
 
                     {/* Ambient organic gradients for high-contrast typography reading */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
 
                     {/* Black brand overlay on hover (40% opacity) */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                     {/* Meta info floating */}
-                    <div className="absolute inset-0 flex flex-col justify-between p-8 sm:p-12 text-white">
+                    <div className="absolute inset-0 flex flex-col justify-between p-5 sm:p-12 text-white">
                       <div className="flex justify-between items-start">
-                        <span className="font-mono text-[9px] uppercase tracking-widest border border-white/30 bg-black/45 px-3 py-1.5 rounded-full text-brand-bronze font-bold">
+                        {/* <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-widest border border-white/30 bg-black/45 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-brand-bronze font-bold">
                           ★ Highly Featured Piece
-                        </span>
-                        <div className="font-mono text-[9px] text-zinc-400">
+                        </span> 
+                        <div className="font-mono text-[8px] sm:text-[9px] text-zinc-400">
                           SECTOR // {featuredProject.year} PRESENTATION
-                        </div>
+                        </div> */}
                       </div>
 
                       {/* Title & tags */}
-                      <div className="space-y-4 max-w-xl">
+                      <div className="space-y-3 sm:space-y-4 max-w-xl">
                         <div className="space-y-1">
-                          <span className="font-mono text-[9px] tracking-widest text-[#C5A880] uppercase">
+                          <span className="font-mono text-[8px] sm:text-[9px] tracking-widest text-[#C5A880] uppercase">
                             {featuredProject.bannerTag || 'LATEST DIGITAL SCULPTURE'}
                           </span>
-                          <h2 className="font-display text-3xl sm:text-5xl font-bold tracking-tight uppercase leading-none">
+                          <h2 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight uppercase leading-none">
                             {featuredProject.title}
                           </h2>
                         </div>
-                        <div className="pt-2">
-                          <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold text-white group-hover:text-brand-bronze transition-colors">
+                        <div className="pt-1">
+                          <span className="inline-flex items-center gap-1.5 font-mono text-[9px] sm:text-[10px] font-bold text-white group-hover:text-brand-bronze transition-colors">
                             <span>VIEW DETAILS</span>
                             <span className="transition-transform group-hover:translate-x-1">&rarr;</span>
                           </span>
@@ -314,16 +315,16 @@ export default function App() {
               )}
 
               {/* SECTION SUBTITLE OVERVIEW */}
-              <section className="px-6 md:px-12 pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 border-b pb-4 border-brand-muted/10">
+             {/* <section className="px-6 md:px-12 pt-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 border-b pb-4 border-brand-muted/10">
                 <div className="space-y-1">
-                  <div className="font-mono text-[10px] tracking-widest text-brand-bronze uppercase">// ALL COHORT RENDERINGS</div>
-                  <h3 className="font-display text-xl font-semibold tracking-tight">CGI & Identity Catalog</h3>
+                  <div className="font-mono text-[9px] tracking-widest text-brand-bronze uppercase">// ALL COHORT RENDERINGS</div>
+                  <h3 className="font-display text-lg sm:text-xl font-semibold tracking-tight">CGI & Identity Catalog</h3>
                 </div>
-                <div className="font-mono text-[10px] text-brand-muted flex items-center gap-1.5">
+                <div className="font-mono text-[9px] sm:text-[10px] text-brand-muted flex items-center gap-1.5">
                   <span>Aspect ratio mixture enabled</span>
                   <ChevronDown className="w-3.5 h-3.5 animate-bounce" />
                 </div>
-              </section>
+              </section> */}
 
               {/* --- 2. GRID HOUSING (FIRST FLANK) --- */}
               <section className="px-6 md:px-12">
@@ -389,11 +390,7 @@ export default function App() {
             </div>
             
             <div className="flex items-center gap-6">
-              <a href="mailto:hello@domain.com" className="hover:text-brand-bronze transition-colors flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5" />
-                <span>hello@domain.com</span>
-              </a>
-              <span>|</span>
+              
               <button 
                 onClick={() => setIsAdminOpen(true)}
                 className="hover:text-brand-bronze transition-colors flex items-center gap-1"

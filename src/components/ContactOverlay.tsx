@@ -14,7 +14,7 @@ export const ContactOverlay: React.FC<ContactOverlayProps> = ({ isOpen, onClose,
   const [formData, setFormData] = useState({ name: '', email: '', service: '3D Design', message: '' });
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText('hello@domain.com');
+    navigator.clipboard.writeText('bon2262@naver.com');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -69,7 +69,7 @@ export const ContactOverlay: React.FC<ContactOverlayProps> = ({ isOpen, onClose,
             {/* Header Area */}
             <div className="space-y-4">
               <div className="font-mono text-[9px] tracking-widest text-brand-bronze uppercase">
-                // ACTIVE TRANSMISSION PIPELINE
+                // CONTACT
               </div>
               <h2 className="font-display text-3xl sm:text-4xl font-bold uppercase tracking-tight">
                 Get In Touch
@@ -77,7 +77,7 @@ export const ContactOverlay: React.FC<ContactOverlayProps> = ({ isOpen, onClose,
               <p className={`font-sans text-xs sm:text-sm leading-relaxed ${
                 theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
               }`}>
-                Interested in launching a customized 3D composition, spatial identity, or full-scale creative art direction? Use the transmission module below or mail directly.
+                Do you need 3D graphics or artwork for your brand? Please write down the design you need and send it to me.
               </p>
             </div>
 
@@ -91,8 +91,8 @@ export const ContactOverlay: React.FC<ContactOverlayProps> = ({ isOpen, onClose,
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-brand-bronze" />
                   <div>
-                    <span className="font-mono text-[9px] block text-brand-muted uppercase">DIRECT INBOX</span>
-                    <span className="font-mono text-xs sm:text-sm font-semibold select-all">hello@domain.com</span>
+                    <span className="font-mono text-[9px] block text-brand-muted uppercase">E-mail</span>
+                    <span className="font-mono text-xs sm:text-sm font-semibold select-all">bon2262@naver.com</span>
                   </div>
                 </div>
                 <button
@@ -123,7 +123,7 @@ export const ContactOverlay: React.FC<ContactOverlayProps> = ({ isOpen, onClose,
                 <form onSubmit={handleFormSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="font-mono text-[9px] text-brand-muted uppercase">IDENTITY NAME</label>
+                      <label className="font-mono text-[9px] text-brand-muted uppercase">Brand Name</label>
                       <input
                         type="text"
                         required
@@ -134,11 +134,11 @@ export const ContactOverlay: React.FC<ContactOverlayProps> = ({ isOpen, onClose,
                             ? 'border-zinc-800 bg-neutral-900 focus:border-brand-bronze text-white'
                             : 'border-zinc-300 bg-white focus:border-brand-bronze text-brand-black'
                         }`}
-                        placeholder="John Doe"
+                        placeholder="John"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="font-mono text-[9px] text-brand-muted uppercase">EMAIL ADDR</label>
+                      <label className="font-mono text-[9px] text-brand-muted uppercase">EMAIL</label>
                       <input
                         type="email"
                         required
@@ -155,7 +155,7 @@ export const ContactOverlay: React.FC<ContactOverlayProps> = ({ isOpen, onClose,
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-mono text-[9px] text-brand-muted uppercase">CAPABILITY DOMAIN</label>
+                    <label className="font-mono text-[9px] text-brand-muted uppercase">Category</label>
                     <select
                       value={formData.service}
                       onChange={(e) => setFormData({ ...formData, service: e.target.value })}
@@ -165,10 +165,8 @@ export const ContactOverlay: React.FC<ContactOverlayProps> = ({ isOpen, onClose,
                           : 'border-zinc-300 bg-white focus:border-brand-bronze text-brand-black'
                       }`}
                     >
-                      <option value="3D Design">3D Design & Modeling // SPEC</option>
-                      <option value="Brand Identity">Brand Identity System // DESIGN</option>
-                      <option value="Art Direction">Art Direction Strategy // DIRECT</option>
-                      <option value="Motion Design">Motion Kinetics // RENDER</option>
+                      <option value="3D Design">3D Design & Modeling</option>
+                      <option value="Graphic Design">Graphic Design</option>
                     </select>
                   </div>
 
@@ -184,7 +182,7 @@ export const ContactOverlay: React.FC<ContactOverlayProps> = ({ isOpen, onClose,
                           ? 'border-zinc-800 bg-neutral-900 focus:border-brand-bronze text-white'
                           : 'border-zinc-300 bg-white focus:border-brand-bronze text-brand-black'
                       }`}
-                      placeholder="Outline your timeline, goals and design requirements..."
+                      placeholder="goals and design requirements..."
                     />
                   </div>
 
@@ -207,7 +205,7 @@ export const ContactOverlay: React.FC<ContactOverlayProps> = ({ isOpen, onClose,
               <div className="text-zinc-500 uppercase">BONWOONG GU SOCIAL METRICS</div>
               <div className="flex flex-wrap gap-4 items-center">
                 <a
-                  href="https://instagram.com/bonwoong_gu"
+                  href="https://instagram.com/weakfdtion"
                   target="_blank"
                   rel="no-referrer"
                   className="flex items-center gap-1.5 text-brand-muted hover:text-brand-bronze transition-all"

@@ -136,7 +136,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
               </span>
             </div>
 
-            <h1 className="font-display text-4xl sm:text-[60px] md:text-[80px] font-bold tracking-tighter leading-none">
+            <h1 className="font-display text-3xl sm:text-[54px] md:text-[72px] lg:text-[80px] font-bold tracking-tighter leading-none">
               {project.title}
             </h1>
           </motion.div>
@@ -145,20 +145,20 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
 
 
       {/* --- SECTION 02: CONCEPT / OVERVIEW --- */}
-      <section className="py-24 md:py-32 max-w-7xl mx-auto px-6 md:px-12">
+      <section className="py-16 md:py-28 max-w-7xl mx-auto px-6 md:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           
           <div className="lg:col-span-4 space-y-1">
-            <h4 className="font-mono text-[10px] uppercase tracking-widest text-brand-bronze font-bold">
+            <h4 className="font-mono text-[9px] sm:text-[10px] uppercase tracking-widest text-brand-bronze font-bold">
               01 // CORE CONCEPT
             </h4>
-            <h3 className="font-display text-2xl font-semibold tracking-tight">
+            <h3 className="font-display text-xl sm:text-2xl font-semibold tracking-tight">
               Project Overview
             </h3>
           </div>
 
           <div className="lg:col-span-8">
-            <p className={`font-sans text-xl md:text-1xl font-light leading-relaxed tracking-tight ${
+            <p className={`font-sans text-base sm:text-lg md:text-xl font-light leading-relaxed tracking-tight ${
               theme === 'dark' ? 'text-neutral-200' : 'text-neutral-700'
             }`}>
               {project.concept}
@@ -404,11 +404,11 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
                 Next Project Portfolio Teaser
               </span>
               
-              <h3 className="font-display text-4xl md:text-6xl font-bold tracking-tight uppercase group-hover:text-brand-bronze transition-colors">
+              <h3 className="font-display text-2xl sm:text-4xl md:text-6xl font-bold tracking-tight uppercase group-hover:text-brand-bronze transition-colors">
                 {nextProject.title} &rarr;
               </h3>
 
-              <p className={`font-sans text-sm ${
+              <p className={`font-sans text-xs sm:text-sm ${
                 theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
               }`}>
                 {nextProject.subtitle} ({nextProject.year}) • {nextProject.category}
@@ -436,7 +436,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
             className="font-mono text-xs uppercase tracking-widest text-brand-muted hover:text-brand-bronze transition-colors flex items-center gap-2 mx-auto"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>RETURN TO COMPLETE GRID INDEX ({project.category})</span>
+            <span>RETURN TO INDEX </span>
           </button>
         </div>
       </section>
