@@ -131,6 +131,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [newKeyVisualText, setNewKeyVisualText] = useState('');
   const [newKeyVisualTextPlate, setNewKeyVisualTextPlate] = useState('');
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [draggedProjectIdx, setDraggedProjectIdx] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [storageSettings, setStorageSettingsState] = useState<StorageSettings>(getStorageSettings());
   const [showStorageConfig, setShowStorageConfig] = useState(false);
@@ -513,6 +514,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setDraggedIdx(null);
   };
 
+  const handleProjectDragStart = (e: React.DragEvent, idx: number) => {
+    setDraggedProjectIdx(idx);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleProjectDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleProjectDragEnter = (e: React.DragEvent, targetIdx: number) => {
+    if (draggedProjectIdx === null || draggedProjectIdx === targetIdx) return;
+    
+    const updated = [...projects];
+    // Swap projects
+    const temp = updated[draggedProjectIdx];
+    updated[draggedProjectIdx] = updated[targetIdx];
+    updated[targetIdx] = temp;
+
+    onUpdateProjects(updated);
+    setDraggedProjectIdx(targetIdx);
+  };
+
+  const handleProjectDragEnd = () => {
+    setDraggedProjectIdx(null);
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -608,28 +635,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                     {/* Scroll Catalog list */}
                     <div className="space-y-2 max-h-[50vh] md:max-h-[62vh] overflow-y-auto">
-                      {projects.map((proj) => (
+                      {projects.map((proj, idx) => (
                         <div
                           key={proj.id}
-                          className={`p-3 rounded-sm border flex items-center justify-between transition-all ${
-                            formState.id === proj.id
-                              ? 'border-brand-bronze bg-brand-bronze/5'
-                              : 'border-transparent bg-neutral-900/10 hover:bg-neutral-900/40'
+                          draggable
+                          onDragStart={(e) => handleProjectDragStart(e, idx)}
+                          onDragOver={handleProjectDragOver}
+                          onDragEnter={(e) => handleProjectDragEnter(e, idx)}
+                          onDragEnd={handleProjectDragEnd}
+                          className={`p-3 rounded-sm border flex items-center justify-between transition-all duration-200 cursor-grab active:cursor-grabbing select-none ${
+                            draggedProjectIdx === idx
+                              ? 'border-brand-bronze scale-95 opacity-50 bg-brand-bronze/5 shadow-inner'
+                              : formState.id === proj.id
+                                ? 'border-brand-bronze bg-brand-bronze/5'
+                                : 'border-transparent bg-neutral-900/10 hover:bg-neutral-900/40 hover:border-brand-bronze/30'
                           }`}
                         >
-                          <div
-                            onClick={() => handleEditProject(proj)}
-                            className="flex-1 cursor-pointer"
-                          >
-                            <div className="font-display font-semibold text-xs tracking-tight">{proj.title}</div>
-                            <div className="font-mono text-[9px] text-neutral-400">
-                              {proj.category} • {proj.year} {proj.isExperiment && '• [EXPERIMENT]'} {proj.isFeatured && '• [★ HERO]'}
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <GripVertical className="w-3.5 h-3.5 text-zinc-500 hover:text-brand-bronze transition-colors shrink-0" />
+                            <div
+                              onClick={() => handleEditProject(proj)}
+                              className="flex-1 cursor-pointer min-w-0"
+                            >
+                              <div className="font-display font-semibold text-xs tracking-tight truncate">{proj.title}</div>
+                              <div className="font-mono text-[9px] text-neutral-400 truncate">
+                                {proj.category} • {proj.year} {proj.isExperiment && '• [EXPMT]'} {proj.isFeatured && '• [★ HERO]'}
+                              </div>
                             </div>
                           </div>
                           
                           <button
                             onClick={() => handleDeleteProject(proj.id)}
-                            className="p-1 px-2.5 text-neutral-500 hover:text-red-400 hover:scale-105 transition-all"
+                            className="p-1 px-2.5 text-neutral-500 hover:text-red-400 hover:scale-105 transition-all shrink-0"
                             title="Delete file project"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
