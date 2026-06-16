@@ -19,6 +19,8 @@
       "https://res.cloudinary.com/drh1az1qm/image/upload/v1781529857/portfolio/eecxdbnr41ubxaauz8nn.jpg",
       "https://res.cloudinary.com/drh1az1qm/video/upload/v1781604887/portfolio/qfnxkslewyuiwjn89umj.mp4",
       "https://res.cloudinary.com/drh1az1qm/image/upload/v1781601812/portfolio/zrfvvavjugey7mvz2o5c.jpg",
+      "https://res.cloudinary.com/drh1az1qm/image/upload/v1781621765/portfolio/glyj4i9jahcyjsgslwei.jpg",
+      "https://res.cloudinary.com/drh1az1qm/image/upload/v1781621765/portfolio/fihczme6ey3cwj93wmqz.jpg",
       "https://res.cloudinary.com/drh1az1qm/video/upload/v1781606026/portfolio/ildyd0ejrvdacg4qkgg8.mp4",
       "https://res.cloudinary.com/drh1az1qm/image/upload/v1781600863/portfolio/lqdvhjfwd9ncymw5g63b.jpg"
     ],
@@ -39,7 +41,9 @@
       "third",
       "third",
       "full",
-      "full",
+      "half",
+      "half",
+      "half",
       "half"
     ]
   },
