@@ -9,16 +9,14 @@
     "thumbnailUrl": "https://res.cloudinary.com/drh1az1qm/image/upload/v1781524778/portfolio/hdworzihknuhpl2nhnqz.jpg",
     "isFeatured": true,
     "isExperiment": false,
-    "concept": "A visual exploration of liquid motion inspired by digital erosion, light refraction, and premium industrial alloys. Examining the fluid threshold of metallic state transitions under simulated extreme atmospheric pressures.",
+    "concept": "SKIN1004는 순수한 자연의 품 안에 머무는 경험을 선사합니다.\n깨끗한 원료뿐 아니라 자연이 품은 위안과 활력을 온전히 담아내어 보다 명료한 깨끗한 아름다움을 연구하여 시각적으로 전합니다. ",
     "keyVisuals": [
       "https://res.cloudinary.com/drh1az1qm/video/upload/v1781529787/portfolio/vucslnnzvvrapqjzq5ag.mp4",
       "https://res.cloudinary.com/drh1az1qm/video/upload/v1781529822/portfolio/q66ee0xxda9lydnmu9hm.mp4",
       "https://res.cloudinary.com/drh1az1qm/image/upload/v1781529849/portfolio/jcar44vkantpad1trskc.jpg",
       "https://res.cloudinary.com/drh1az1qm/image/upload/v1781529857/portfolio/eecxdbnr41ubxaauz8nn.jpg",
       "https://res.cloudinary.com/drh1az1qm/image/upload/v1781529857/portfolio/en50uhpwuhe8v342t6wk.jpg",
-      "https://res.cloudinary.com/drh1az1qm/image/upload/v1781599609/portfolio/ojsr0i5eozbfgzwkepkv.jpg",
-      "https://res.cloudinary.com/drh1az1qm/image/upload/v1781599608/portfolio/dhx3thfry8cc25gj7tml.jpg",
-      "https://res.cloudinary.com/drh1az1qm/image/upload/v1781599608/portfolio/jvjr1syehoewyt3utwaz.jpg"
+      "https://res.cloudinary.com/drh1az1qm/video/upload/v1781598292/portfolio/it0jopyiajoyfwwrjxkg.mp4"
     ],
     "sketchUrl": "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=600&auto=format&fit=crop",
     "referenceUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600&auto=format&fit=crop",
@@ -27,15 +25,13 @@
     "motionUrl": "dynamic_active_canvas",
     "finalVisualUrl": "/src/assets/images/liquid_geometry_1780900490463.png",
     "client": "SKIN1004",
-    "bannerTag": "product 3d graphic",
+    "bannerTag": "Cosmetic 3D graphic",
     "keyVisualsLayout": [
       "full",
       "half",
       "half",
       "half",
       "half",
-      "full",
-      "full",
       "full"
     ]
   },
