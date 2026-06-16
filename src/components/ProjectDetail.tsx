@@ -170,13 +170,23 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({
 
 
       {/* --- SECTION 03: KEY VISUAL GALLERY (BEHANCE STYLE FLEXIBLE GRID) --- */}
-      <section className="py-6 max-w-6xl mx-auto px-4 md:px-6 grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+      <section className="py-6 max-w-6xl mx-auto px-4 md:px-6 grid grid-cols-1 md:grid-cols-[repeat(60,minmax(0,1fr))] gap-2 md:gap-4">
         {project.keyVisuals.map((visual, idx) => {
           const isVid = isVideoUrl(visual);
           const isVimeo = isVimeoUrl(visual);
           const isTxt = isTextPlate(visual);
           const itemLayout = project.keyVisualsLayout?.[idx] || (project.galleryLayout === 'grid2' ? 'half' : 'full');
-          const gridClass = itemLayout === 'half' ? 'col-span-1' : 'col-span-1 md:col-span-2';
+          
+          let gridClass = 'col-span-1 md:col-span-[60]';
+          if (itemLayout === 'half') {
+            gridClass = 'col-span-1 md:col-span-[30]';
+          } else if (itemLayout === 'third') {
+            gridClass = 'col-span-1 md:col-span-[20]';
+          } else if (itemLayout === 'fourth') {
+            gridClass = 'col-span-1 md:col-span-[15]';
+          } else if (itemLayout === 'fifth') {
+            gridClass = 'col-span-1 md:col-span-[12]';
+          }
 
           return (
             <motion.div

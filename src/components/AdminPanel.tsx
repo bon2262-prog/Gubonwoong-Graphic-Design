@@ -1711,7 +1711,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                   )}
                                   {/* Small Badge */}
                                   <div className="absolute bottom-1.5 left-1.5 bg-black/75 px-1 py-0.5 rounded text-[8px] font-mono text-brand-bronze uppercase pointer-events-none group-hover:opacity-0 transition-opacity z-10">
-                                    {formState.keyVisualsLayout?.[idx] === 'half' ? '2단 (HALF)' : '1단 (FULL)'}
+                                    {formState.keyVisualsLayout?.[idx] === 'half' 
+                                      ? '2단 (HALF)' 
+                                      : formState.keyVisualsLayout?.[idx] === 'third' 
+                                        ? '3단 (THIRD)' 
+                                        : formState.keyVisualsLayout?.[idx] === 'fourth' 
+                                          ? '4단 (QUARTER)' 
+                                          : formState.keyVisualsLayout?.[idx] === 'fifth' 
+                                            ? '5단 (FIFTH)' 
+                                            : '1단 (FULL)'}
                                   </div>
 
                                   <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2 z-10">
@@ -1727,7 +1735,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                           while (updatedLayouts.length < formState.keyVisuals.length) {
                                             updatedLayouts.push('full');
                                           }
-                                          updatedLayouts[idx] = e.target.value as 'full' | 'half';
+                                          updatedLayouts[idx] = e.target.value as any;
                                           setFormState({
                                             ...formState,
                                             keyVisualsLayout: updatedLayouts
@@ -1737,6 +1745,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                       >
                                         <option value="full">1단 (FULL)</option>
                                         <option value="half">2단 (HALF)</option>
+                                        <option value="third">3단 (THIRD)</option>
+                                        <option value="fourth">4단 (QUARTER)</option>
+                                        <option value="fifth">5단 (FIFTH)</option>
                                       </select>
                                     </div>
                                     <div className="flex justify-between items-center w-full mt-auto">

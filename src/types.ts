@@ -18,7 +18,7 @@ export interface Project {
   finalVisualUrl: string;
   client?: string;
   galleryLayout?: 'stack' | 'grid2';
-  keyVisualsLayout?: ('full' | 'half')[];
+  keyVisualsLayout?: ('full' | 'half' | 'third' | 'fourth' | 'fifth')[];
   bannerTag?: string;
 }
 
