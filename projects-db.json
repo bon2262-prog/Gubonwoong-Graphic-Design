@@ -182,28 +182,5 @@
     "motionUrl": "silica_press",
     "finalVisualUrl": "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=1200&auto=format&fit=crop",
     "client": "Silica Artisanal Co."
-  },
-  {
-    "id": "kinetic-identity",
-    "title": "Neo-Move Studio",
-    "subtitle": "Generative Typography System",
-    "year": "2025",
-    "category": "Motion Design",
-    "aspectRatio": "16:9",
-    "thumbnailUrl": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1200&auto=format&fit=crop",
-    "isFeatured": false,
-    "isExperiment": false,
-    "concept": "Developing a liquid and elastic typographic logo generator that transforms its layout based on real-time sound frequencies of physical spaces. Clean Neue Haas styled shapes paired with rapid digital response.",
-    "keyVisuals": [
-      "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=1200&auto=format&fit=crop"
-    ],
-    "sketchUrl": "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=600&auto=format&fit=crop",
-    "referenceUrl": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600&auto=format&fit=crop",
-    "devUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop",
-    "materialUrl": "https://images.unsplash.com/photo-1579783928621-7a13d66a62d1?q=80&w=600&auto=format&fit=crop",
-    "motionUrl": "typography_warp",
-    "finalVisualUrl": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1200&auto=format&fit=crop",
-    "client": "Move Digital Arts Festival"
   }
 ]
