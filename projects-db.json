@@ -53,14 +53,15 @@
     "subtitle": "cosmetic",
     "year": "2026",
     "category": "Art Direction",
-    "aspectRatio": "4:5",
-    "thumbnailUrl": "/src/assets/images/chrome_bloom_1780900510271.png",
+    "aspectRatio": "16:9",
+    "thumbnailUrl": "https://res.cloudinary.com/drh1az1qm/image/upload/v1781624734/portfolio/wuyjccyzjizklmnxdfxt.jpg",
     "isFeatured": false,
     "isExperiment": false,
     "concept": "An organic virtual sculpture exploring the intersections of botanical aesthetics and cybernetic structures. Metal chrome petals wrap around soft translucent cores, forming a synthesis of technology and delicate natural forms.",
     "keyVisuals": [
-      "/src/assets/images/chrome_bloom_1780900510271.png",
-      "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=1200&auto=format&fit=crop"
+      "https://res.cloudinary.com/drh1az1qm/video/upload/v1781624765/portfolio/uw2eretiljngx85prbw1.mp4",
+      "https://res.cloudinary.com/drh1az1qm/image/upload/v1781624783/portfolio/xgigxlocc2fjms05hnyn.jpg",
+      "https://res.cloudinary.com/drh1az1qm/video/upload/v1781624796/portfolio/rhwxwwapob9rccq6dciu.mp4"
     ],
     "sketchUrl": "https://images.unsplash.com/photo-1544273677-c433136021d4?q=80&w=600&auto=format&fit=crop",
     "referenceUrl": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=600&auto=format&fit=crop",
@@ -69,7 +70,12 @@
     "motionUrl": "chrome_pulse_wave",
     "finalVisualUrl": "/src/assets/images/chrome_bloom_1780900510271.png",
     "client": "Aesthetic Generation Lab",
-    "bannerTag": "코스메틱 상세페이지에 노출되는 스킨케어 정보성 그래픽으로 입자 흡수와 장벽의 변화가 시각적으로 잘 드러남으로써 제품의 효과를 구매자에게 확실히 인식시킵니다."
+    "bannerTag": "코스메틱 상세페이지에 노출되는 스킨케어 정보성 그래픽으로 입자 흡수와 장벽의 변화가 시각적으로 잘 드러남으로써 제품의 효과를 구매자에게 확실히 인식시킵니다.",
+    "keyVisualsLayout": [
+      "full",
+      "half",
+      "half"
+    ]
   },
   {
     "id": "industrial-erosion",
