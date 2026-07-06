@@ -49,11 +49,13 @@
     "concept": "MORE is an aromatics brand that minimizes artificial ingredients and provides a long-lasting fragrance experience.\nThe flexible nature of the scattered sand changes into a variety of visual geometries, which are similar to the way the scent seems to spread, symbolizing an extraordinarily changing scent.\nScent brand MORE creates products that can create a diverse and flexible atmosphere by delicately contemplating scents that match the purpose, place, and situation that require fragrance.",
     "keyVisuals": [
       "https://res.cloudinary.com/drh1az1qm/video/upload/v1783323782/portfolio/ogxeiifn0sllawgfq4qd.mp4",
+      "https://res.cloudinary.com/drh1az1qm/image/upload/v1783337769/portfolio/szvodfvlfljxotbtm9ij.jpg",
       "https://res.cloudinary.com/drh1az1qm/image/upload/v1783325772/portfolio/niak6cxxnpitikxut0cq.jpg",
-      "https://res.cloudinary.com/drh1az1qm/video/upload/v1782473132/portfolio/vfrqyuyrbqvo7mndtm4j.mp4",
-      "https://res.cloudinary.com/drh1az1qm/video/upload/v1783323839/portfolio/xdcne7krvkqsc79ybuee.mp4",
       "https://res.cloudinary.com/drh1az1qm/video/upload/v1782473291/portfolio/m1o76c6vl7obdwxwg9t5.mp4",
-      "https://res.cloudinary.com/drh1az1qm/image/upload/v1783326164/portfolio/t7zhmkeujvclb2mignzh.jpg"
+      "https://res.cloudinary.com/drh1az1qm/video/upload/v1783323839/portfolio/xdcne7krvkqsc79ybuee.mp4",
+      "https://res.cloudinary.com/drh1az1qm/image/upload/v1783337852/portfolio/er3nnzvkqadb5tcle9xg.jpg",
+      "https://res.cloudinary.com/drh1az1qm/image/upload/v1783337863/portfolio/ti1pe23kdguubgudra9q.jpg",
+      "https://res.cloudinary.com/drh1az1qm/video/upload/v1782473132/portfolio/vfrqyuyrbqvo7mndtm4j.mp4"
     ],
     "sketchUrl": "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=600&auto=format&fit=crop",
     "referenceUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600&auto=format&fit=crop",
@@ -65,11 +67,13 @@
     "client": "Personal Work",
     "keyVisualsLayout": [
       "full",
+      "half",
+      "half",
+      "half",
+      "half",
       "full",
-      "third",
-      "third",
-      "third",
-      "full"
+      "half",
+      "half"
     ]
   },
   {
